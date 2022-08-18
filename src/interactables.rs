@@ -11,14 +11,14 @@ pub struct Gate{
     pub inputs: Vec<Entity>,
     pub logic_fn: fn (inputs: Vec<bool>) -> bool,   
 }
-impl Gate{
-    pub fn get_input_states(&self) -> Vec<bool>{
-        let inputs: Query<&Input>;
-        return self.inputs.iter().map(|entity| {
-            (inputs.get(*entity).unwrap().activation_fn)()
-        }).collect::<Vec<bool>>();
-    }
-}
+// impl Gate{
+//     pub fn get_input_states(&self) -> Vec<bool>{
+//         let inputs: Query<&Input>;
+//         return self.inputs.iter().map(|entity| {
+//             (inputs.get(*entity).unwrap().activation_fn)()
+//         }).collect::<Vec<bool>>();
+//     }
+// }
 
 #[derive(Component)]
 pub struct Output{
