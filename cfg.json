@@ -1,0 +1,9 @@
+{
+    "logging": {
+        "level": "warn",
+        "filter": "info,wgpu_core=warn,wgpu_hal=warn"
+    },
+    "Level": {
+        "dir": "levels/"
+    }
+}
