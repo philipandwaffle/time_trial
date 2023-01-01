@@ -1,171 +1,142 @@
-use bevy::{DefaultPlugins, core::Time, window::{Windows, WindowDescriptor}, ecs::bundle, render::texture::DEFAULT_IMAGE_HANDLE, math::{vec2, vec3}};
+use std::{f32::consts::PI, fs::OpenOptions};
+
+use bevy::log::LogPlugin;
 use bevy::prelude::*;
-use player::PlayerController;
-use crate::collision::*;
-use crate::player::*;
-use crate::movement::*;
-use crate::resources::*;
-use crate::interactables::*;
+use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_inspector_egui_rapier::InspectableRapierPlugin;
+use bevy_rapier2d::prelude::*;
+use level::Level;
+use player::PlayerPlugin;
 
+use crate::config::CONFIGURATION;
+use crate::input::InputPlugin;
+use crate::level::create_levels;
+
+mod config;
+mod input;
+mod level;
 mod player;
-mod collision;
-mod movement;
-mod resources;
-mod interactables;
 
-pub struct WinSize {
-	pub w: f32,
-	pub h: f32,
-}
+#[macro_use]
+extern crate lazy_static;
 
 fn main() {
-    println!("Hello, world!");
+    println!("{}", &CONFIGURATION.logging.level);
+
+    let log_level = match CONFIGURATION.logging.level.as_str() {
+        "error" => bevy::log::Level::ERROR,
+        "warn" => bevy::log::Level::WARN,
+        "debug" => bevy::log::Level::DEBUG,
+        "info" => bevy::log::Level::INFO,
+        "trace" => bevy::log::Level::TRACE,
+        _ => panic!(
+            "{} is not a valid log level",
+            CONFIGURATION.logging.level.as_str()
+        ),
+    };
+    // error!("I'm an ERROR");
+    // warn!("I'm an WARN");
+    // debug!("I'm an DEBUG");
+    // info!("I'm an INFO");
+    // trace!("I'm an TRACE");
+
+    create_levels();
+    Level::load("levels/001.json");
 
     App::new()
-        .insert_resource(WindowDescriptor {
-			title: "Physics Engine".to_string(),
-            mode: bevy::window::WindowMode::BorderlessFullscreen,
-			..Default::default()
-		})
-        .insert_resource(Bindings::default())
-        .insert_resource(TimeStep{
-            time: Default::default(),
-            time_step: 1./128.
+        .insert_resource(RapierConfiguration {
+            gravity: Vec2::ZERO,
+            ..Default::default()
         })
-        .add_plugins(DefaultPlugins)
-        .add_startup_system(setup_system)
-        .add_startup_system(spawn_entities)
-        .add_system(move_player)
-        .add_system(move_movables)
-        .add_system(apply_drag)
-        .add_system(detect_collisions)        
-        .add_system(push_pushables)                
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    window: WindowDescriptor {
+                        width: 640.,
+                        height: 360.,
+                        title: "Testing".to_string(),
+                        resizable: false,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .set(LogPlugin {
+                    level: log_level,
+                    filter: CONFIGURATION.logging.filter.clone(),
+                }),
+        )
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugin(RapierDebugRenderPlugin::default())
+        .add_plugin(InspectableRapierPlugin)
+        .add_plugin(WorldInspectorPlugin::default())
+        .add_plugin(PlayerPlugin)
+        .add_plugin(InputPlugin)
+        .add_startup_system(spawn_camera)
+        //.add_startup_system(spawn_scene)
         .run();
 }
 
-fn setup_system(
-	mut commands: Commands,
-	mut windows: ResMut<Windows>,
-) {
-	// camera
-	commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-
-	// capture window size
-	let window = windows.get_primary_mut().unwrap();
-	let (win_w, win_h) = (window.width(), window.height());
-
-	// position window (for tutorial)
-	// window.set_position(IVec2::new(2780, 4900));
-
-	// add WinSize resource
-	let win_size = WinSize { w: win_w, h: win_h };
-	commands.insert_resource(win_size);
+fn spawn_camera(mut commands: Commands) {
+    commands.spawn(Name::new("Camera")).insert(Camera2dBundle {
+        projection: OrthographicProjection {
+            scale: 4.0,
+            ..default()
+        },
+        ..default()
+    });
 }
 
-fn spawn_entities(
-    mut commands: Commands,
-){  
-    // player
-    commands.spawn_bundle((       
-        Transform {
-            translation: vec3(0., 0., 0.),
-            scale: vec3(100., 100., 100.),
-            rotation: Quat::IDENTITY,
-        },
-        Sprite {
-            color: Color::rgb(1., 1., 1.),
-            ..Default::default()
-        },                                                                                                                                                                                                                                                                                                                                                      
-        GlobalTransform::default(),
-        Visibility::default(),
-        DEFAULT_IMAGE_HANDLE.typed::<Image>(),
-        PlayerController {
-            speed: 2.,
-            max_speed: 4.,
-        },
-        Movable::default(),
-        Pushable{
-            push_vel: 2.,
-        },
-        Drag{
-            drag: 0.9,
-            enabled: true,
-        },
-        CollisionBox{
-            size: vec2(100., 100.),
-            ..Default::default()
-        }
-    ));
+fn spawn_scene(mut commands: Commands) {
+    commands
+        .spawn(Name::new("ground_right"))
+        .insert(TransformBundle::from_transform(Transform {
+            translation: Vec3::new(250.0, 0.0, 0.0),
+            rotation: Quat::from_rotation_z(PI / 4.0),
+            ..default()
+        }))
+        .insert(Collider::cuboid(500.0, 50.0));
+    commands
+        .spawn(Name::new("ground_left"))
+        .insert(TransformBundle::from_transform(Transform {
+            translation: Vec3::new(-250.0, 0.0, 0.0),
+            rotation: Quat::from_rotation_z(3.0 * PI / 4.0),
+            ..default()
+        }))
+        .insert(Collider::cuboid(500.0, 50.0));
+}
 
-    // box
-    commands.spawn_bundle((       
-        Transform {
-            translation: vec3(200., 200., 0.),
-            scale: vec3(100., 100., 100.),
-            rotation: Quat::IDENTITY,
-        },
-        Sprite {
-            color: Color::rgb(1., 0., 0.),
-            ..Default::default()
-        },
-        GlobalTransform::default(),
-        Visibility::default(),
-        DEFAULT_IMAGE_HANDLE.typed::<Image>(),
-        CollisionBox{
-            size: vec2(100., 100.),
-            ..Default::default()
-        },
-        Movable::default(),
-        Pushable{
-            push_vel: 5.,
-        },
-        VelConstraint{
-            constrain_fn: |vel| -> Vec2{
-                // move along the x-axis
-                if vel.x.abs() > vel.y.abs(){
-                    return vec2(vel.x, 0.);                    
-                }
-                // move along the y-axis
-                else{
-                    return vec2(0., vel.y);
-                }                
+fn spawn_ball(commands: &mut Commands, x: f32, y: f32) {
+    commands
+        .spawn(Name::new("Ball"))
+        .insert(PhysicsObjectBundle {
+            transform_bundle: TransformBundle::from(Transform::from_xyz(x, y, 0.0)),
+            collider: Collider::ball(20.0),
+            ..default()
+        });
+}
+
+#[derive(Bundle, Clone, Debug)]
+pub struct PhysicsObjectBundle {
+    pub transform_bundle: TransformBundle,
+    pub collider: Collider,
+    pub rigid_body: RigidBody,
+    pub damping: Damping,
+    pub restitution: Restitution,
+}
+impl Default for PhysicsObjectBundle {
+    fn default() -> Self {
+        Self {
+            transform_bundle: TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)),
+            collider: Collider::ball(50.0),
+            rigid_body: RigidBody::Dynamic,
+            damping: Damping {
+                linear_damping: 1.0,
+                angular_damping: 1.0,
+            },
+            restitution: Restitution {
+                coefficient: 1.0,
+                combine_rule: CoefficientCombineRule::Average,
             },
         }
-    ));
-
-    // Box 2
-    commands.spawn_bundle((       
-        Transform {
-            translation: vec3(-200., 200., 0.),
-            scale: vec3(100., 100., 100.),
-            rotation: Quat::IDENTITY,
-        },
-        Sprite {
-            color: Color::rgb(1., 0., 0.),
-            ..Default::default()
-        },
-        GlobalTransform::default(),
-        Visibility::default(),
-        DEFAULT_IMAGE_HANDLE.typed::<Image>(),
-        CollisionBox{
-            size: vec2(100., 100.),
-            ..Default::default()
-        },
-        Movable::default(),
-        Pushable{
-            push_vel: 5.,
-        },
-        VelConstraint{
-            constrain_fn: |vel| -> Vec2{
-                // move along the x-axis
-                if vel.x.abs() > vel.y.abs(){                    
-                    return vec2(vel.x, 0.);                    
-                }
-                // move along the y-axis
-                else{
-                    return vec2(0., vel.y);
-                }                
-            },
-        }
-    ));
+    }
 }
