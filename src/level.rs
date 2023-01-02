@@ -5,10 +5,13 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::Collider;
 use serde::{Deserialize, Serialize};
 
 use crate::{config::CONFIGURATION, input::InputStates};
+
+use self::level_components::Wall;
+
+mod level_components;
 
 #[derive(Resource)]
 pub struct LevelContext {
@@ -222,32 +225,6 @@ impl Level {
                 error!("{:?}", err);
             }
         }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Wall {
-    pub pos: Vec2,
-    pub rotation: f32,
-    pub size: Vec2,
-}
-impl Wall {
-    pub fn new(x_pos: f32, y_pos: f32, rotation: f32, x_size: f32, y_size: f32) -> Self {
-        return Self {
-            pos: Vec2::new(x_pos, y_pos),
-            rotation: rotation,
-            size: Vec2::new(x_size, y_size),
-        };
-    }
-    pub fn build_bundle(&self) -> (TransformBundle, Collider) {
-        return (
-            TransformBundle::from_transform(Transform {
-                translation: self.pos.extend(0.0),
-                rotation: Quat::from_rotation_z(self.rotation),
-                ..default()
-            }),
-            Collider::cuboid(self.size.x, self.size.y),
-        );
     }
 }
 

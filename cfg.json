@@ -1,22 +1,22 @@
 {
-    "logging": {
-        "level": "trace",
-        "filter": "info,wgpu_core=error,wgpu_hal=error"
-    },
-    "level": {
-        "dir" : "levels"
-    },
-    "player":{
-        "move_speed": 50.0,
-        "linear_damping": 1.0,
-        "angular_damping": 1.0
-    },
-    "bindings":{
-        "move_up": "W",
-        "move_left": "A",
-        "move_down": "S",
-        "move_right": "D",
-        "next_level": "Left",
-        "prev_level": "Right"
-    }
+  "logging": {
+    "level": "trace",
+    "filter": "info,wgpu_core=error,wgpu_hal=error"
+  },
+  "level": {
+    "dir": "levels"
+  },
+  "player": {
+    "move_speed": 50.0,
+    "linear_damping": 4.0,
+    "angular_damping": 1.0
+  },
+  "bindings": {
+    "move_up": "W",
+    "move_left": "A",
+    "move_down": "S",
+    "move_right": "D",
+    "next_level": "Left",
+    "prev_level": "Right"
+  }
 }
