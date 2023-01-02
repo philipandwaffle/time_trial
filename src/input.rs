@@ -28,12 +28,34 @@ impl Default for InputStates {
     }
 }
 
+// #[derive(Resource)]
+// pub struct InputBindings {
+//     pub move_up: KeyCode,
+//     pub move_left: KeyCode,
+//     pub move_down: KeyCode,
+//     pub move_right: KeyCode,
+//     pub next_level: KeyCode,
+//     pub prev_level: KeyCode,
+// }
+// impl Default for InputBindings {
+//     fn default() -> Self {
+//         return Self {
+//             move_up: Keycode,
+//             move_left: Keycode,
+//             move_down: Keycode,
+//             move_right: Keycode,
+//             next_level: Keycode,
+//             prev_level: Keycode,
+//         };
+//     }
+// }
+
 fn process_input(input: Res<Input<KeyCode>>, mut state: ResMut<InputStates>) {
     state.move_up = input.pressed(KeyCode::W);
     state.move_left = input.pressed(KeyCode::A);
     state.move_down = input.pressed(KeyCode::S);
     state.move_right = input.pressed(KeyCode::D);
 
-    state.next_level = input.pressed(KeyCode::Left);
-    state.prev_level = input.pressed(KeyCode::Right);
+    state.next_level = input.just_released(KeyCode::Right);
+    state.prev_level = input.just_released(KeyCode::Left);
 }

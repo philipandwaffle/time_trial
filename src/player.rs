@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::input::InputStates;
+use crate::{config::CONFIGURATION, input::InputStates};
 
 #[derive(Component, Clone, Debug)]
 pub struct Player;
@@ -23,8 +23,8 @@ impl Default for PlayerBundle {
             collider: Collider::ball(50.0),
             rigid_body: RigidBody::Dynamic,
             damping: Damping {
-                linear_damping: 1.0,
-                angular_damping: 1.0,
+                linear_damping: CONFIGURATION.player.linear_damping,
+                angular_damping: CONFIGURATION.player.angular_damping,
             },
             restitution: Restitution {
                 coefficient: 1.0,
@@ -37,7 +37,6 @@ impl Default for PlayerBundle {
 }
 
 pub struct PlayerPlugin;
-
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_startup_system(spawn_player).add_system(move_player);
@@ -49,22 +48,22 @@ fn spawn_player(mut commands: Commands) {
         .insert(PlayerBundle::default());
 }
 
-static MOVE_SPEED: f32 = 100.0;
+//static MOVE_SPEED: f32 = 100.0;
 fn move_player(mut players: Query<&mut Velocity, With<Player>>, input: Res<InputStates>) {
     for mut player in players.iter_mut() {
         let mut vel = player.linvel;
 
         if input.move_up {
-            vel.y += MOVE_SPEED;
+            vel.y += &CONFIGURATION.player.move_speed;
         }
         if input.move_left {
-            vel.x -= MOVE_SPEED
+            vel.x -= &CONFIGURATION.player.move_speed
         }
         if input.move_down {
-            vel.y -= MOVE_SPEED;
+            vel.y -= &CONFIGURATION.player.move_speed;
         }
         if input.move_right {
-            vel.x += MOVE_SPEED;
+            vel.x += &CONFIGURATION.player.move_speed;
         }
 
         // if input.pressed(KeyCode::E) {

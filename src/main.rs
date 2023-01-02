@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, fs::OpenOptions};
+use std::f32::consts::PI;
 
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
@@ -10,7 +10,7 @@ use player::PlayerPlugin;
 
 use crate::config::CONFIGURATION;
 use crate::input::InputPlugin;
-use crate::level::create_levels;
+use crate::level::{create_levels, LevelControllerPlugin};
 
 mod config;
 mod input;
@@ -21,8 +21,6 @@ mod player;
 extern crate lazy_static;
 
 fn main() {
-    println!("{}", &CONFIGURATION.logging.level);
-
     let log_level = match CONFIGURATION.logging.level.as_str() {
         "error" => bevy::log::Level::ERROR,
         "warn" => bevy::log::Level::WARN,
@@ -39,9 +37,6 @@ fn main() {
     // debug!("I'm an DEBUG");
     // info!("I'm an INFO");
     // trace!("I'm an TRACE");
-
-    create_levels();
-    Level::load("levels/001.json");
 
     App::new()
         .insert_resource(RapierConfiguration {
@@ -71,6 +66,7 @@ fn main() {
         .add_plugin(WorldInspectorPlugin::default())
         .add_plugin(PlayerPlugin)
         .add_plugin(InputPlugin)
+        .add_plugin(LevelControllerPlugin)
         .add_startup_system(spawn_camera)
         //.add_startup_system(spawn_scene)
         .run();

@@ -4,6 +4,7 @@
         "Deque",
         "despawn",
         "despawned",
+        "Despawning",
         "egui",
         "Inspectable",
         "linvel"

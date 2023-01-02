@@ -1,10 +1,13 @@
 use std::fs;
 
+use bevy::prelude::Plugin;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub logging: Logging,
+    pub level: Level,
+    pub player: Player,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -16,6 +19,13 @@ pub struct Logging {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Level {
     pub dir: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Player {
+    pub move_speed: f32,
+    pub linear_damping: f32,
+    pub angular_damping: f32,
 }
 
 lazy_static! {

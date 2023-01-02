@@ -1,12 +1,117 @@
+use core::panic;
 use std::{
-    fs::File,
+    fs::{self, File},
     io::{Read, Write},
 };
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::Collider;
 use serde::{Deserialize, Serialize};
+
+use crate::{config::CONFIGURATION, input::InputStates};
+
+#[derive(Resource)]
+pub struct LevelContext {
+    level_dirs: Vec<String>,
+    cur_level_index: usize,
+    cur_level: Option<Level>,
+}
+impl Default for LevelContext {
+    fn default() -> Self {
+        let mut level_dirs: Vec<String> = vec![];
+
+        let dir_reader = match fs::read_dir(&CONFIGURATION.level.dir) {
+            Ok(rd) => {
+                info!("Successfully read directory: {}", &CONFIGURATION.level.dir);
+                rd
+            }
+            Err(err) => {
+                error!("Error reading directory: {}", &CONFIGURATION.level.dir);
+                error!("{:?}", err);
+                panic!();
+            }
+        };
+
+        for dir in dir_reader {
+            match dir {
+                Ok(dir_entry) => {
+                    let dir_path = dir_entry.path();
+                    let path = dir_path.as_os_str().to_str().unwrap();
+                    trace!("Found level file {}", path);
+                    level_dirs.push(String::from(path));
+                }
+                Err(err) => {
+                    error!("Error reading directory, continuing to process");
+                    error!("{:?}", err);
+                }
+            }
+        }
+
+        if level_dirs.len() == 0 {
+            warn!("No levels have been loaded");
+        }
+
+        return Self {
+            level_dirs: level_dirs,
+            cur_level_index: 0,
+            cur_level: None,
+        };
+    }
+}
+impl LevelContext {
+    pub fn change_level(&mut self, index: usize, commands: &mut Commands) {
+        if index > self.level_dirs.len() - 1 {
+            error!("Level with index {} doesn't exist", index);
+            return;
+        }
+
+        // Despawning level
+        if self.cur_level.is_some() {
+            info!("Despawning current level");
+            self.cur_level.as_mut().unwrap().despawn(commands);
+        } else {
+            info!("No current level to despawn")
+        }
+
+        // Setting new current level
+        self.cur_level_index = index;
+
+        // Spawning new level
+        let path: &str = self.level_dirs.get(index).unwrap();
+        self.cur_level = Level::load(path);
+
+        if self.cur_level.is_some() {
+            info!("Spawning current level");
+            self.cur_level.as_mut().unwrap().spawn(commands);
+        } else {
+            info!("No current level to spawn");
+        }
+    }
+}
 pub struct LevelControllerPlugin;
+impl Plugin for LevelControllerPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(LevelContext::default())
+            .add_system(next_level);
+    }
+}
+fn next_level(mut lc: ResMut<LevelContext>, input: Res<InputStates>, mut commands: Commands) {
+    let mut next_level_index = lc.cur_level_index;
+    if input.next_level {
+        next_level_index += 1;
+    } else if input.prev_level {
+        if lc.cur_level_index == 0 {
+            error!("Level with index < 0 is invalid");
+            return;
+        } else {
+            next_level_index -= 1;
+        }
+    } else {
+        return;
+    }
+
+    lc.change_level(next_level_index, &mut commands);
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct Level {
@@ -48,8 +153,9 @@ impl Level {
 
     /// Load a level from a file
     pub fn load(path: &str) -> Option<Self> {
+        info!("Trying to load level from: {}", path);
         // Try to open the file
-        let mut file = match File::open(&path) {
+        let mut file = match File::open(path) {
             Ok(file) => {
                 info!("Successfully read file: {}", &path);
                 file
