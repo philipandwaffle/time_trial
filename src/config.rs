@@ -1,7 +1,5 @@
-use std::fs;
-
-use bevy::prelude::Plugin;
 use serde::{Deserialize, Serialize};
+use std::fs;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {

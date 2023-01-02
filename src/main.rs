@@ -5,12 +5,11 @@ use bevy::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_inspector_egui_rapier::InspectableRapierPlugin;
 use bevy_rapier2d::prelude::*;
-use level::Level;
 use player::PlayerPlugin;
 
 use crate::config::CONFIGURATION;
 use crate::input::InputPlugin;
-use crate::level::{create_levels, LevelControllerPlugin};
+use crate::level::LevelControllerPlugin;
 
 mod config;
 mod input;
