@@ -1,39 +1,55 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::egui::output;
 use bevy_rapier2d::prelude::{Collider, Sensor};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Tree {
-    nodes: Vec<Node>,
+    pub outputs: Vec<Output>,
+    pub gates: Vec<LogicGate>,
+    pub inputs: Vec<Input>,
 }
 impl Tree {
     pub fn update(&mut self) {
-        for node in self.nodes.iter_mut() {
-            match node {
-                Node::Input(_) => todo!(),
-                Node::LogicGate(_) => todo!(),
-                Node::Output(output) => {}
+        for gate in self.gates.iter_mut() {
+            let node_a = self.inputs.get(gate.in_nodes[0]);
+            let node_b = self.inputs.get(gate.in_nodes[1]);
+
+            if node_a.is_none() || node_b.is_none() {
+                error!("This gate's inputs don't point to a node");
+                warn!("There is likely a problem with this level's JSON");
+            } else {
+                gate.update_state(&node_a.unwrap().cur_state, &node_b.unwrap().cur_state);
+            }
+        }
+
+        for output in self.outputs.iter_mut() {
+            let node_in = self.inputs.get(output.in_node);
+
+            if node_in.is_none() {
+                error!("This outputs's input don't point to a node");
+                warn!("There is likely a problem with this level's JSON");
+            } else {
+                output.update_state(&node_in.unwrap().cur_state);
             }
         }
     }
-
-    fn update_node(&mut self, node: Node) {}
+}
+impl Default for Tree {
+    fn default() -> Self {
+        Self {
+            outputs: vec![],
+            gates: vec![],
+            inputs: vec![],
+        }
+    }
 }
 
-#[derive(Serialize, Deserialize)]
-pub enum Node {
-    Input(Input),
-    LogicGate(LogicGate),
-    Output(Output),
-}
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum InputType {
     PressButton,
     ToggleButton,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Component, Clone)]
 pub struct Input {
     input_type: InputType,
     cur_state: bool,
@@ -50,7 +66,7 @@ impl Input {
         };
     }
 
-    pub fn build_bundle(&self) -> (TransformBundle, Collider, Sensor) {
+    pub fn build_bundle(&self) -> (TransformBundle, Collider, Sensor, Input) {
         return (
             TransformBundle::from_transform(Transform {
                 translation: self.pos.extend(0.0),
@@ -58,11 +74,16 @@ impl Input {
             }),
             Collider::cuboid(self.size.x, self.size.y),
             Sensor,
+            self.clone(),
         );
+    }
+
+    pub fn update_state(&mut self, new_state: &bool) {
+        self.cur_state = new_state.clone();
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum LogicGateType {
     Or,
     And,
@@ -84,7 +105,7 @@ impl LogicGate {
         };
     }
 
-    pub fn update_state(&mut self, a: bool, b: bool) {
+    pub fn update_state(&mut self, a: &bool, b: &bool) {
         self.cur_state = match self.logic_gate_type {
             LogicGateType::Or => self.input[0] || self.input[1],
             LogicGateType::And => self.input[0] && self.input[1],
@@ -92,12 +113,12 @@ impl LogicGate {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum OutputType {
     Door,
     Light,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Component, Clone)]
 pub struct Output {
     output_type: OutputType,
     in_node: usize,
@@ -123,14 +144,19 @@ impl Output {
         };
     }
 
-    pub fn build_bundle(&self) -> (TransformBundle, Collider) {
+    pub fn build_bundle(&self) -> (TransformBundle, Collider, Output) {
         return (
             TransformBundle::from_transform(Transform {
                 translation: self.pos.extend(0.0),
                 ..default()
             }),
             Collider::cuboid(self.size.x, self.size.y),
+            self.clone(),
         );
+    }
+
+    pub fn update_state(&mut self, in_state: &bool) {
+        self.cur_state = in_state.clone();
     }
 }
 

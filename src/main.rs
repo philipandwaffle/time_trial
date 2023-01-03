@@ -37,6 +37,8 @@ fn main() {
     // info!("I'm an INFO");
     // trace!("I'm an TRACE");
 
+    //level::create_levels();
+
     App::new()
         .insert_resource(RapierConfiguration {
             gravity: Vec2::ZERO,

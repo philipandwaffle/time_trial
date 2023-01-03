@@ -1,7 +1,37 @@
 {
-  "walls": [
-    { "pos": [-50.0, 0.0], "rotation": 0.0, "size": [10.0, 50.0] },
-    { "pos": [50.0, 0.0], "rotation": 0.0, "size": [10.0, 50.0] }
-  ],
+  "walls": [],
+  "tree": {
+    "outputs": [
+      {
+        "output_type": "Door",
+        "in_node": 0,
+        "cur_state": false,
+        "pos": [500.0, 0.0],
+        "size": [50.0, 50.0]
+      }
+    ],
+    "gates": [
+      {
+        "logic_gate_type": "Or",
+        "in_nodes": [0, 1],
+        "input": [false, false],
+        "cur_state": false
+      }
+    ],
+    "inputs": [
+      {
+        "input_type": "PressButton",
+        "cur_state": false,
+        "pos": [0.0, 500.0],
+        "size": [50.0, 50.0]
+      },
+      {
+        "input_type": "ToggleButton",
+        "cur_state": false,
+        "pos": [0.0, -500.0],
+        "size": [50.0, 50.0]
+      }
+    ]
+  },
   "active_entities": []
 }

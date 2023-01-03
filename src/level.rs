@@ -9,7 +9,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{config::CONFIGURATION, input::InputStates};
 
-use self::level_components::Wall;
+use self::level_components::InputType;
+use self::level_components::LogicGateType;
+use self::level_components::OutputType;
+use self::level_components::*;
 
 mod level_components;
 
@@ -119,12 +122,14 @@ fn next_level(mut lc: ResMut<LevelContext>, input: Res<InputStates>, mut command
 #[derive(Serialize, Deserialize)]
 pub struct Level {
     walls: Vec<Wall>,
+    tree: Tree,
     active_entities: Vec<Entity>,
 }
 impl Level {
-    pub fn new(walls: Vec<Wall>) -> Self {
+    pub fn new(walls: Vec<Wall>, tree: Tree) -> Self {
         return Self {
             walls: walls,
+            tree: tree,
             active_entities: vec![],
         };
     }
@@ -139,6 +144,16 @@ impl Level {
         self.walls.iter().for_each(|wall| {
             self.active_entities
                 .push(commands.spawn(wall.build_bundle()).id());
+        });
+
+        self.tree.inputs.iter().for_each(|input| {
+            self.active_entities
+                .push(commands.spawn(input.build_bundle()).id());
+        });
+
+        self.tree.outputs.iter().for_each(|outputs| {
+            self.active_entities
+                .push(commands.spawn(outputs.build_bundle()).id());
         });
     }
 
@@ -230,10 +245,20 @@ impl Level {
 
 /// Sandbox to hardcode levels so they can be saved to a file
 pub fn create_levels() {
-    let level_01 = Level::new(vec![
-        Wall::new(-50.0, 0.0, 0.0, 10.0, 50.0),
-        Wall::new(50.0, 0.0, 0.0, 10.0, 50.0),
-    ]);
+    let level_01 = Level::new(
+        vec![
+            Wall::new(-50.0, 0.0, 0.0, 10.0, 50.0),
+            Wall::new(50.0, 0.0, 0.0, 10.0, 50.0),
+        ],
+        Tree {
+            outputs: vec![Output::new(OutputType::Door, 0, 500.0, 0.0, 50.0, 50.0)],
+            gates: vec![LogicGate::new(LogicGateType::Or, [0, 1])],
+            inputs: vec![
+                level_components::Input::new(InputType::PressButton, 0.0, 500.0, 50.0, 50.0),
+                level_components::Input::new(InputType::ToggleButton, 0.0, -500.0, 50.0, 50.0),
+            ],
+        },
+    );
 
     level_01.save("levels/001.json");
 }
