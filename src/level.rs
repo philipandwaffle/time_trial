@@ -118,6 +118,9 @@ fn next_level(mut lc: ResMut<LevelContext>, input: Res<InputStates>, mut command
 
     lc.change_level(next_level_index, &mut commands);
 }
+fn update_level_components(){
+    
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct Level {
