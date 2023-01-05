@@ -51,8 +51,8 @@ pub enum InputType {
 }
 #[derive(Serialize, Deserialize, Component, Clone)]
 pub struct Input {
-    input_type: InputType,
-    cur_state: bool,
+    pub input_type: InputType,
+    pub cur_state: bool,
     pos: Vec2,
     size: Vec2,
 }

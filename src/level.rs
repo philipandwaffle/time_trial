@@ -5,14 +5,16 @@ use std::{
 };
 
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::RapierContext;
 use serde::{Deserialize, Serialize};
 
-use crate::{config::CONFIGURATION, input::InputStates};
-
-use self::level_components::InputType;
 use self::level_components::LogicGateType;
 use self::level_components::OutputType;
 use self::level_components::*;
+use self::level_components::{Input, InputType};
+
+use crate::player::Player;
+use crate::{config::CONFIGURATION, input::InputStates};
 
 mod level_components;
 
@@ -98,7 +100,9 @@ pub struct LevelControllerPlugin;
 impl Plugin for LevelControllerPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(LevelContext::default())
-            .add_system(next_level);
+            .add_system(next_level)
+            .add_system(update_level_logic)
+            .add_system(update_level_inputs);
     }
 }
 fn next_level(mut lc: ResMut<LevelContext>, input: Res<InputStates>, mut commands: Commands) {
@@ -118,10 +122,35 @@ fn next_level(mut lc: ResMut<LevelContext>, input: Res<InputStates>, mut command
 
     lc.change_level(next_level_index, &mut commands);
 }
-fn update_level_components(){
-    
+fn update_level_logic(mut lc: ResMut<LevelContext>) {
+    match lc.cur_level.as_mut() {
+        Some(level) => level.update_level_logic(),
+        None => warn!("There is no current level"),
+    }
 }
 
+fn update_level_inputs(
+    world: &World,
+    rapier_context: Res<RapierContext>,
+    mut inputs: Query<(Entity, &mut Input)>,
+) {
+    for (entity, mut input) in inputs.iter_mut() {
+        /* Iterate through all the intersection pairs involving a specific collider. */
+        let mut new_state = false;
+        for (a, b, intersecting) in rapier_context.intersections_with(entity) {
+            if world.entity(a).get::<Player>().is_some() {
+                new_state = true;
+            }
+        }
+        match input.input_type {
+            InputType::PressButton => {
+                input.update_state(&new_state);
+                debug!("button pressed, state: {}", &new_state);
+            }
+            InputType::ToggleButton => warn!("toggle button not implemented"),
+        }
+    }
+}
 #[derive(Serialize, Deserialize)]
 pub struct Level {
     walls: Vec<Wall>,
@@ -135,6 +164,10 @@ impl Level {
             tree: tree,
             active_entities: vec![],
         };
+    }
+
+    pub fn update_level_logic(&mut self) {
+        self.tree.update()
     }
 
     /// Spawns the level
