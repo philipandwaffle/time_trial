@@ -5,7 +5,8 @@ use std::{
 };
 
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::RapierContext;
+use bevy_inspector_egui::egui::output;
+use bevy_rapier2d::prelude::{Collider, RapierContext, RigidBody, Sensor};
 use serde::{Deserialize, Serialize};
 
 use self::level_components::LogicGateType;
@@ -95,17 +96,21 @@ impl LevelContext {
             info!("No current level to spawn");
         }
     }
+    pub fn log_level_tree(&self) {
+        debug!("{:?}", self.cur_level.as_ref().unwrap().tree);
+    }
 }
 pub struct LevelControllerPlugin;
 impl Plugin for LevelControllerPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(LevelContext::default())
-            .add_system(next_level)
+            .add_system(level_debugging)
             .add_system(update_level_logic)
-            .add_system(update_level_inputs);
+            .add_system(update_level_inputs)
+            .add_system(update_level_outputs);
     }
 }
-fn next_level(mut lc: ResMut<LevelContext>, input: Res<InputStates>, mut commands: Commands) {
+fn level_debugging(mut lc: ResMut<LevelContext>, input: Res<InputStates>, mut commands: Commands) {
     let mut next_level_index = lc.cur_level_index;
     if input.next_level {
         next_level_index += 1;
@@ -116,6 +121,9 @@ fn next_level(mut lc: ResMut<LevelContext>, input: Res<InputStates>, mut command
         } else {
             next_level_index -= 1;
         }
+    } else if input.debug_level {
+        info!("{:?}", lc.cur_level.as_ref().unwrap().tree);
+        return;
     } else {
         return;
     }
@@ -128,29 +136,56 @@ fn update_level_logic(mut lc: ResMut<LevelContext>) {
         None => warn!("There is no current level"),
     }
 }
-
 fn update_level_inputs(
-    world: &World,
-    rapier_context: Res<RapierContext>,
+    rc: Res<RapierContext>,
     mut inputs: Query<(Entity, &mut Input)>,
+    player: Query<(Entity, &Player)>,
 ) {
-    for (entity, mut input) in inputs.iter_mut() {
-        /* Iterate through all the intersection pairs involving a specific collider. */
-        let mut new_state = false;
-        for (a, b, intersecting) in rapier_context.intersections_with(entity) {
-            if world.entity(a).get::<Player>().is_some() {
-                new_state = true;
-            }
+    let player_entity = match player.get_single() {
+        Ok(p) => p.0,
+        Err(_) => {
+            warn!("There's no player in the level");
+            return;
         }
+    };
+
+    for (input_entity, mut input) in inputs.iter_mut() {
+        let intersecting = rc.intersection_pair(input_entity, player_entity) == Some(true);
+        let cur_state = input.cur_state;
+
         match input.input_type {
             InputType::PressButton => {
-                input.update_state(&new_state);
-                debug!("button pressed, state: {}", &new_state);
+                if cur_state != intersecting {
+                    input.update_state(&intersecting);
+                    info!("Press button new state: {}", &intersecting);
+                }
             }
-            InputType::ToggleButton => warn!("toggle button not implemented"),
+            InputType::ToggleButton => {
+                if cur_state != intersecting {
+                    input.update_state(&intersecting);
+                    info!("Toggle button new state: {}", &intersecting);
+                }
+            }
         }
     }
 }
+fn update_level_outputs(mut outputs: Query<(Entity, &Output)>, mut commands: Commands) {
+    for (output_entity, output) in outputs.iter_mut() {
+        match output.output_type {
+            OutputType::Door => {
+                if output.cur_state {
+                    commands.entity(output_entity).insert(Sensor);
+                    debug!("Opening door");
+                } else {
+                    commands.entity(output_entity).remove::<Sensor>();
+                    debug!("Closing door");
+                }
+            }
+            OutputType::Light => todo!(),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Level {
     walls: Vec<Wall>,

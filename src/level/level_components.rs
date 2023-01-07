@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::{Collider, Sensor};
 use serde::{Deserialize, Serialize};
@@ -43,6 +45,15 @@ impl Default for Tree {
         }
     }
 }
+impl Debug for Tree {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Tree")
+            .field("outputs", &self.outputs)
+            .field("gates", &self.gates)
+            .field("inputs", &self.inputs)
+            .finish()
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone)]
 pub enum InputType {
@@ -80,6 +91,14 @@ impl Input {
 
     pub fn update_state(&mut self, new_state: &bool) {
         self.cur_state = new_state.clone();
+        info!("set new state, {}", new_state);
+    }
+}
+impl Debug for Input {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Input")
+            .field("cur_state", &self.cur_state)
+            .finish()
     }
 }
 
@@ -106,10 +125,19 @@ impl LogicGate {
     }
 
     pub fn update_state(&mut self, a: &bool, b: &bool) {
+        self.input[0] = *a;
+        self.input[1] = *b;
         self.cur_state = match self.logic_gate_type {
             LogicGateType::Or => self.input[0] || self.input[1],
             LogicGateType::And => self.input[0] && self.input[1],
         }
+    }
+}
+impl Debug for LogicGate {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LogicGate")
+            .field("cur_state", &self.cur_state)
+            .finish()
     }
 }
 
@@ -120,9 +148,9 @@ pub enum OutputType {
 }
 #[derive(Serialize, Deserialize, Component, Clone)]
 pub struct Output {
-    output_type: OutputType,
+    pub output_type: OutputType,
     in_node: usize,
-    cur_state: bool,
+    pub cur_state: bool,
     pos: Vec2,
     size: Vec2,
 }
@@ -157,6 +185,13 @@ impl Output {
 
     pub fn update_state(&mut self, in_state: &bool) {
         self.cur_state = in_state.clone();
+    }
+}
+impl Debug for Output {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Output")
+            .field("cur_state", &self.cur_state)
+            .finish()
     }
 }
 

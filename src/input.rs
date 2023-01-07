@@ -14,6 +14,7 @@ pub struct InputStates {
     pub move_right: bool,
     pub next_level: bool,
     pub prev_level: bool,
+    pub debug_level: bool,
 }
 impl Default for InputStates {
     fn default() -> Self {
@@ -24,6 +25,7 @@ impl Default for InputStates {
             move_right: false,
             next_level: false,
             prev_level: false,
+            debug_level: false,
         };
     }
 }
@@ -58,4 +60,5 @@ fn process_input(input: Res<Input<KeyCode>>, mut state: ResMut<InputStates>) {
 
     state.next_level = input.just_released(KeyCode::Right);
     state.prev_level = input.just_released(KeyCode::Left);
+    state.debug_level = input.just_pressed(KeyCode::Down);
 }
