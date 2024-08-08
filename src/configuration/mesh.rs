@@ -5,9 +5,7 @@ use super::ConfigTag;
 
 #[derive(Resource, Serialize, Deserialize)]
 pub struct MeshConfig {
-    pub block: Vec2,
-    pub joint: f32,
-    pub bone: Vec2,
-    pub muscle: Vec2,
+    pub wall: Vec2,
+    pub player: f32,
 }
 impl ConfigTag for MeshConfig {}

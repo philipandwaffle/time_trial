@@ -16,11 +16,7 @@ impl HSL {
 
 #[derive(Resource, Serialize, Deserialize)]
 pub struct MaterialConfig {
-    pub block: HSL,
-    pub joint: HSL,
-    pub bone: HSL,
-    pub muscle_contract: HSL,
-    pub muscle_expand: HSL,
-    pub muscle_neutral: HSL,
+    pub wall: HSL,
+    pub player: HSL,
 }
 impl ConfigTag for MaterialConfig {}

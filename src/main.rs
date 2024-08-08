@@ -2,10 +2,13 @@ use std::f32::consts::PI;
 
 use crate::player::player_bundle::PlayerPlugin;
 use bevy::log::LogPlugin;
+use bevy::math::vec2;
 use bevy::prelude::*;
 use bevy::window::WindowMode;
 use bevy_rapier2d::prelude::*;
 use configuration::ConfigPlugin;
+use handles::{Handles, HandlesPlugin};
+use level::bundles::WallBundle;
 use level::gate::{AndGate, GateTypes, OrGate};
 use level::logic_tree::LogicTree;
 
@@ -13,24 +16,24 @@ use level::logic_tree::LogicTree;
 
 mod configuration;
 mod consts;
+mod handles;
 mod level;
 mod player;
 
 fn main() {
-    let mut logic_tree = LogicTree::new(
-        vec![
-            vec![
-                GateTypes::OrGate(OrGate::default()),
-                GateTypes::OrGate(OrGate::default()),
-            ],
-            vec![GateTypes::AndGate(AndGate::default())],
-        ],
-        vec![vec![0, 1, 2, 3], vec![0, 1], vec![0]],
-    );
+    // let mut logic_tree = LogicTree::new(
+    //     vec![
+    //         vec![
+    //             GateTypes::OrGate(OrGate::default()),
+    //             GateTypes::OrGate(OrGate::default()),
+    //         ],
+    //         vec![GateTypes::AndGate(AndGate::default())],
+    //     ],
+    //     vec![vec![0, 1, 2, 3], vec![0, 1], vec![0]],
+    // );
 
-    println!("{:?}", logic_tree.process(vec![false, true, false, true]));
+    // println!("{:?}", logic_tree.process(vec![false, true, false, true]));
 
-    return;
     App::new()
         .insert_resource(RapierConfiguration::new(0.0))
         .add_plugins(
@@ -59,6 +62,7 @@ fn main() {
         )
         .add_plugins((
             ConfigPlugin,
+            HandlesPlugin,
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
             RapierDebugRenderPlugin::default(),
             PlayerPlugin,
@@ -68,7 +72,25 @@ fn main() {
         .run();
 }
 
-fn spawn_scene(mut commands: Commands) {
+fn spawn_scene(mut commands: Commands, handles: Res<Handles>) {
+    WallBundle::new(
+        &handles.wall_material,
+        &handles.wall_mesh,
+        vec2(250.0, 0.0),
+        PI / 4.0,
+        vec2(500.0, 50.0),
+    )
+    .spawn(&mut commands);
+    WallBundle::new(
+        &handles.wall_material,
+        &handles.wall_mesh,
+        vec2(-250.0, 0.0),
+        3.0 * PI / 4.0,
+        vec2(500.0, 50.0),
+    )
+    .spawn(&mut commands);
+
+    return;
     commands
         .spawn(Name::new("ground_right"))
         .insert(TransformBundle::from_transform(Transform {

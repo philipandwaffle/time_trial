@@ -1,6 +1,7 @@
 use core::panic;
 
 use bevy::core_pipeline::core_2d::graph::input;
+use serde::{Deserialize, Serialize};
 
 use super::{
     gate::{self, Gate, GateTypes},
@@ -8,6 +9,7 @@ use super::{
     output::Output,
 };
 
+#[derive(Deserialize, Serialize)]
 pub struct LogicTree {
     gates: Vec<Vec<GateTypes>>,
     interfaces: Vec<Vec<usize>>,

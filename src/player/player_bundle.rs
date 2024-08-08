@@ -1,16 +1,23 @@
-use bevy::{math::vec2, prelude::*};
+use bevy::{
+    math::vec2,
+    prelude::*,
+    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+};
 use bevy_rapier2d::prelude::*;
 
-use crate::configuration::{key_bindings::KeyBinds, player::PlayerConfig};
+use crate::{
+    configuration::{key_bindings::KeyBinds, player::PlayerConfig},
+    handles::Handles,
+};
 
 use super::player_camera::PlayerCamBundle;
 
-#[derive(Component, Clone, Debug)]
+#[derive(Component, Clone)]
 pub struct Player;
 
-#[derive(Bundle, Clone, Debug)]
+#[derive(Bundle, Clone)]
 pub struct PlayerBundle {
-    pub transform_bundle: TransformBundle,
+    pub material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     pub collider: Collider,
     pub rigid_body: RigidBody,
     pub damping: Damping,
@@ -19,11 +26,21 @@ pub struct PlayerBundle {
     pub player: Player,
 }
 impl PlayerBundle {
-    pub fn new(collider_radius: f32, linear_damping: f32, angular_damping: f32, pos: Vec2) -> Self {
+    pub fn new(
+        material: &Handle<ColorMaterial>,
+        mesh: &Mesh2dHandle,
+        collider_radius: f32,
+        linear_damping: f32,
+        angular_damping: f32,
+        pos: Vec2,
+    ) -> Self {
         return Self {
-            transform_bundle: TransformBundle::from_transform(Transform::from_translation(
-                pos.extend(0.0),
-            )),
+            material_mesh_bundle: MaterialMesh2dBundle {
+                mesh: mesh.clone(),
+                material: material.clone(),
+                transform: Transform::from_translation(pos.extend(-0.5)),
+                ..default()
+            },
             collider: Collider::ball(collider_radius),
             rigid_body: RigidBody::Dynamic,
             damping: Damping {
@@ -47,9 +64,11 @@ impl Plugin for PlayerPlugin {
             .add_systems(Update, move_player);
     }
 }
-fn spawn_player(mut commands: Commands, player_config: Res<PlayerConfig>) {
+fn spawn_player(mut commands: Commands, player_config: Res<PlayerConfig>, handles: Res<Handles>) {
     let cam_ent = PlayerCamBundle::new(player_config.cam_scale).spawn(&mut commands);
     let player_ent = PlayerBundle::new(
+        &handles.player_material,
+        &handles.player_mesh,
         player_config.collider_radius,
         player_config.linear_damping,
         player_config.angular_damping,
@@ -65,7 +84,7 @@ fn move_player(
     key_binds: Res<KeyBinds>,
     player_config: Res<PlayerConfig>,
 ) {
-    for mut player in players.iter_mut() {
+    if let Ok(mut player) = players.get_single_mut() {
         let mut vel = player.linvel;
         let move_speed = player_config.move_speed;
 

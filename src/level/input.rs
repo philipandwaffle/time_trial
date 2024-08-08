@@ -6,6 +6,12 @@ pub trait Input {
     fn get_n(&self) -> usize;
 }
 
+#[derive(Deserialize, Serialize)]
+pub enum InputType {
+    ToggleButton,
+    PressButton,
+}
+
 #[derive(Component, Deserialize, Serialize)]
 pub struct ToggleButton {
     pub state: bool,

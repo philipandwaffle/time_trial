@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 pub trait Gate<const I: usize, const O: usize> {
     fn get_i() -> usize {
         return I;
@@ -8,6 +10,7 @@ pub trait Gate<const I: usize, const O: usize> {
     fn process(&mut self, i: &mut Vec<bool>, o: &mut Vec<bool>);
 }
 
+#[derive(Deserialize, Serialize)]
 pub enum GateTypes {
     AndGate(AndGate),
     OrGate(OrGate),
@@ -33,7 +36,7 @@ impl GateTypes {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Deserialize, Serialize)]
 pub struct AndGate {
     pub state: bool,
 }
@@ -44,7 +47,7 @@ impl Gate<2, 1> for AndGate {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Deserialize, Serialize)]
 pub struct OrGate {
     pub state: bool,
 }
