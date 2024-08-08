@@ -125,12 +125,14 @@ impl LogicGate {
     }
 
     pub fn update_state(&mut self, a: &bool, b: &bool) {
-        self.input[0] = *a;
-        self.input[1] = *b;
+        self.input[0] = a.clone();
+        self.input[1] = b.clone();
         self.cur_state = match self.logic_gate_type {
             LogicGateType::Or => self.input[0] || self.input[1],
             LogicGateType::And => self.input[0] && self.input[1],
-        }
+        };
+        self.cur_state = true;
+        info!("Gate Set to: {}", self.cur_state);
     }
 }
 impl Debug for LogicGate {

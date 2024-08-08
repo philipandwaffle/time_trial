@@ -1,0 +1,8 @@
+{
+    "up": "KeyW",
+    "left": "KeyA",
+    "down": "KeyS",
+    "right": "KeyD",
+    "next_level": "KeyP",
+    "prev_level": "KeyO"
+}

@@ -1,86 +1,55 @@
 use std::f32::consts::PI;
 
+use crate::player::player_bundle::PlayerPlugin;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
-use bevy_inspector_egui::WorldInspectorPlugin;
-use bevy_inspector_egui_rapier::InspectableRapierPlugin;
+use bevy::window::WindowMode;
 use bevy_rapier2d::prelude::*;
-use player::PlayerPlugin;
+use configuration::ConfigPlugin;
 
-use crate::config::CONFIGURATION;
-use crate::input::InputPlugin;
-use crate::level::LevelControllerPlugin;
+// use crate::level::LevelControllerPlugin;
 
-mod config;
-mod input;
+mod configuration;
+mod consts;
 mod level;
 mod player;
 
-#[macro_use]
-extern crate lazy_static;
-
 fn main() {
-    let log_level = match CONFIGURATION.logging.level.as_str() {
-        "error" => bevy::log::Level::ERROR,
-        "warn" => bevy::log::Level::WARN,
-        "debug" => bevy::log::Level::DEBUG,
-        "info" => bevy::log::Level::INFO,
-        "trace" => bevy::log::Level::TRACE,
-        _ => panic!(
-            "{} is not a valid log level",
-            CONFIGURATION.logging.level.as_str()
-        ),
-    };
-    // error!("I'm an ERROR");
-    // warn!("I'm an WARN");
-    // debug!("I'm an DEBUG");
-    // info!("I'm an INFO");
-    // trace!("I'm an TRACE");
-
-    //level::create_levels();
-
     App::new()
-        .insert_resource(RapierConfiguration {
-            gravity: Vec2::ZERO,
-            ..Default::default()
-        })
+        .insert_resource(RapierConfiguration::new(0.0))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
-                    window: WindowDescriptor {
-                        width: 640.,
-                        height: 360.,
-                        title: "Testing".to_string(),
-                        resizable: false,
+                    // primary_window: None,
+                    // exit_condition: bevy::window::ExitCondition::DontExit,
+                    primary_window: Some(Window {
+                        title: "primordial_pixels".into(),
+                        resolution: (2560.0 * 0.5, 1440.0).into(),
+                        mode: WindowMode::Windowed,
+                        position: WindowPosition::At(IVec2::new(0, 0)),
+                        // Tells wasm not to override default event handling, like F5, Ctrl+R etc.
+                        prevent_default_event_handling: false,
                         ..default()
-                    },
+                    }),
                     ..default()
                 })
+                // don't use linear sampling as image textures will be blurry
+                .set(ImagePlugin::default_nearest())
                 .set(LogPlugin {
-                    level: log_level,
-                    filter: CONFIGURATION.logging.filter.clone(),
+                    // Uncomment this to override the default log settings:
+                    level: bevy::log::Level::WARN,
+                    ..default()
                 }),
         )
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-        .add_plugin(RapierDebugRenderPlugin::default())
-        .add_plugin(InspectableRapierPlugin)
-        .add_plugin(WorldInspectorPlugin::default())
-        .add_plugin(PlayerPlugin)
-        .add_plugin(InputPlugin)
-        .add_plugin(LevelControllerPlugin)
-        .add_startup_system(spawn_camera)
-        //.add_startup_system(spawn_scene)
+        .add_plugins((
+            ConfigPlugin,
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+            RapierDebugRenderPlugin::default(),
+            PlayerPlugin,
+            // LevelControllerPlugin,
+        ))
+        .add_systems(Startup, spawn_scene)
         .run();
-}
-
-fn spawn_camera(mut commands: Commands) {
-    commands.spawn(Name::new("Camera")).insert(Camera2dBundle {
-        projection: OrthographicProjection {
-            scale: 4.0,
-            ..default()
-        },
-        ..default()
-    });
 }
 
 fn spawn_scene(mut commands: Commands) {
