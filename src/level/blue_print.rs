@@ -8,7 +8,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::{configuration::ConfigTag, handles::Handles};
 
-use super::{bundles::WallBundle, input::InputType, logic_tree::LogicTree, output::OutputType};
+use super::{
+    bundles::{LevelRootBundle, WallBundle},
+    input::InputType,
+    logic_tree::LogicTree,
+    output::OutputType,
+};
 
 #[derive(Deserialize, Serialize)]
 pub struct BluePrint {
@@ -20,10 +25,10 @@ pub struct BluePrint {
 impl ConfigTag for BluePrint {}
 impl BluePrint {
     pub fn spawn(self, commands: &mut Commands, handles: &Handles) -> Entity {
-        let root_ent = commands.spawn_empty().id();
+        let root_ent = LevelRootBundle::new().spawn(commands);
 
         for wall in self.walls {
-            let wall_ent = wall.spawn(&handles.player_material, &handles.player_mesh, commands);
+            let wall_ent = wall.spawn(&handles.wall_material, &handles.wall_mesh, commands);
             commands.get_entity(root_ent).unwrap().add_child(wall_ent);
         }
 

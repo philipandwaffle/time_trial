@@ -1,7 +1,7 @@
 {
-    "collider_radius": 50.0,
-    "cam_scale": 4.0,
-    "move_speed": 50.0,
+    "collider_radius": 5.0,
+    "cam_scale": 1.0,
+    "move_speed": 10.0,
     "linear_damping": 4.0,
     "angular_damping": 1.0
 }

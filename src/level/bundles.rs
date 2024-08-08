@@ -1,7 +1,10 @@
 use bevy::{
     asset::Handle,
-    math::{Quat, Vec2},
-    prelude::{default, Bundle, Commands, Entity, Transform},
+    math::{vec3, Quat, Vec2, Vec3},
+    prelude::{
+        default, Bundle, Commands, Entity, InheritedVisibility, Transform, TransformBundle,
+        VisibilityBundle,
+    },
     sprite::{ColorMaterial, MaterialMesh2dBundle, Mesh2dHandle},
 };
 use bevy_rapier2d::prelude::Collider;
@@ -34,6 +37,26 @@ impl WallBundle {
         };
     }
 
+    pub fn spawn(self, commands: &mut Commands) -> Entity {
+        return commands.spawn(self).id();
+    }
+}
+
+#[derive(Bundle, Default)]
+pub struct LevelRootBundle {
+    transform_bundle: TransformBundle,
+    visibility_bundle: VisibilityBundle,
+}
+impl LevelRootBundle {
+    pub fn new() -> Self {
+        return Self {
+            transform_bundle: TransformBundle::from_transform(Transform {
+                translation: vec3(0.0, 0.0, -1.0),
+                ..default()
+            }),
+            visibility_bundle: VisibilityBundle::default(),
+        };
+    }
     pub fn spawn(self, commands: &mut Commands) -> Entity {
         return commands.spawn(self).id();
     }

@@ -12,6 +12,7 @@ use level::blue_print::{BluePrint, WallBluePrint};
 use level::bundles::WallBundle;
 use level::gate::{AndGate, GateTypes, OrGate};
 use level::logic_tree::LogicTree;
+use level::manager::LevelManagerPlugin;
 
 // use crate::level::LevelControllerPlugin;
 
@@ -22,29 +23,6 @@ mod level;
 mod player;
 
 fn main() {
-    let mut logic_tree = LogicTree::new(
-        vec![
-            vec![
-                GateTypes::OrGate(OrGate::default()),
-                GateTypes::OrGate(OrGate::default()),
-            ],
-            vec![GateTypes::AndGate(AndGate::default())],
-        ],
-        vec![vec![0, 1, 2, 3], vec![0, 1], vec![0]],
-    );
-
-    let bp = BluePrint {
-        logic_tree: logic_tree,
-        inputs: vec![],
-        outputs: vec![],
-        walls: vec![
-            WallBluePrint::new(vec2(250.0, 0.0), PI / 4.0, vec2(500.0, 50.0)),
-            WallBluePrint::new(vec2(-250.0, 0.0), 3.0 * PI / 4.0, vec2(500.0, 50.0)),
-        ],
-    };
-    // println!("{:?}", logic_tree.process(vec![false, true, false, true]));
-    bp.save_cfg("levels/000.json");
-
     App::new()
         .insert_resource(RapierConfiguration::new(0.0))
         .add_plugins(
@@ -74,10 +52,10 @@ fn main() {
         .add_plugins((
             ConfigPlugin,
             HandlesPlugin,
+            LevelManagerPlugin,
+            PlayerPlugin,
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
             RapierDebugRenderPlugin::default(),
-            PlayerPlugin,
-            // LevelControllerPlugin,
         ))
         .add_systems(Startup, spawn_scene)
         .run();
