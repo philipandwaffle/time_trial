@@ -33,6 +33,7 @@ impl GateTypes {
     }
 }
 
+#[derive(Default)]
 pub struct AndGate {
     pub state: bool,
 }
@@ -43,6 +44,7 @@ impl Gate<2, 1> for AndGate {
     }
 }
 
+#[derive(Default)]
 pub struct OrGate {
     pub state: bool,
 }

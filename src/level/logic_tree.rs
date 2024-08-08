@@ -1,3 +1,5 @@
+use core::panic;
+
 use bevy::core_pipeline::core_2d::graph::input;
 
 use super::{
@@ -11,6 +13,38 @@ pub struct LogicTree {
     interfaces: Vec<Vec<usize>>,
 }
 impl LogicTree {
+    pub fn new(gates: Vec<Vec<GateTypes>>, interfaces: Vec<Vec<usize>>) -> Self {
+        let me = Self { gates, interfaces };
+        me.is_valid();
+        return me;
+    }
+    fn is_valid(&self) {
+        let mut gate_layer_lens = vec![self.gates[0].iter().map(|g| g.get_i()).sum::<usize>()];
+        for gate_layer in self.gates.iter() {
+            gate_layer_lens.push(gate_layer.iter().map(|g| g.get_o()).sum::<usize>());
+        }
+
+        let interface_layer_lens = self
+            .interfaces
+            .iter()
+            .map(|interface_layer| interface_layer.len())
+            .collect::<Vec<usize>>();
+
+        if interface_layer_lens.len() != gate_layer_lens.len() {
+            panic!(
+                "Logic tree mismatched layer count {} != {}",
+                interface_layer_lens.len(),
+                gate_layer_lens.len()
+            )
+        }
+        if interface_layer_lens != gate_layer_lens {
+            panic!(
+                "Logic tree mismatched layers: {:?} != {:?}",
+                interface_layer_lens, gate_layer_lens
+            )
+        }
+    }
+
     pub fn process(&mut self, input: Vec<bool>) -> Vec<bool> {
         let first_interface = self.interfaces[0].clone();
         let mut mapped_input = Vec::with_capacity(first_interface.len());
@@ -31,6 +65,7 @@ impl LogicTree {
             }
         }
 
+        mapped_input = Vec::with_capacity(output.len());
         for i in self.interfaces[self.interfaces.len() - 1].iter() {
             mapped_input.push(output[*i]);
         }

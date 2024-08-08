@@ -6,6 +6,8 @@ use bevy::prelude::*;
 use bevy::window::WindowMode;
 use bevy_rapier2d::prelude::*;
 use configuration::ConfigPlugin;
+use level::gate::{AndGate, GateTypes, OrGate};
+use level::logic_tree::LogicTree;
 
 // use crate::level::LevelControllerPlugin;
 
@@ -15,6 +17,20 @@ mod level;
 mod player;
 
 fn main() {
+    let mut logic_tree = LogicTree::new(
+        vec![
+            vec![
+                GateTypes::OrGate(OrGate::default()),
+                GateTypes::OrGate(OrGate::default()),
+            ],
+            vec![GateTypes::AndGate(AndGate::default())],
+        ],
+        vec![vec![0, 1, 2, 3], vec![0, 1], vec![0]],
+    );
+
+    println!("{:?}", logic_tree.process(vec![false, true, false, true]));
+
+    return;
     App::new()
         .insert_resource(RapierConfiguration::new(0.0))
         .add_plugins(
@@ -69,6 +85,8 @@ fn spawn_scene(mut commands: Commands) {
             ..default()
         }))
         .insert(Collider::cuboid(500.0, 50.0));
+
+    spawn_ball(&mut commands, 0.0, 100.0);
 }
 
 fn spawn_ball(commands: &mut Commands, x: f32, y: f32) {
