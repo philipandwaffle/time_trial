@@ -7,5 +7,6 @@ use super::ConfigTag;
 pub struct MeshConfig {
     pub wall: Vec2,
     pub player: f32,
+    pub button: f32,
 }
 impl ConfigTag for MeshConfig {}

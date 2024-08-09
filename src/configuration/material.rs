@@ -2,6 +2,16 @@ use bevy::{color::Color, ecs::system::Resource, sprite::ColorMaterial};
 use serde::{Deserialize, Serialize};
 
 use super::ConfigTag;
+
+#[derive(Resource, Serialize, Deserialize)]
+pub struct MaterialConfig {
+    pub wall: HSL,
+    pub player: HSL,
+    pub press_button: HSL,
+    pub toggle_button: HSL,
+}
+impl ConfigTag for MaterialConfig {}
+
 #[derive(Resource, Serialize, Deserialize)]
 pub struct HSL {
     pub h: f32,
@@ -13,10 +23,3 @@ impl HSL {
         return ColorMaterial::from(Color::hsl(self.h, self.s, self.l));
     }
 }
-
-#[derive(Resource, Serialize, Deserialize)]
-pub struct MaterialConfig {
-    pub wall: HSL,
-    pub player: HSL,
-}
-impl ConfigTag for MaterialConfig {}

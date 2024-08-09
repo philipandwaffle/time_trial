@@ -8,7 +8,7 @@ use bevy::window::WindowMode;
 use bevy_rapier2d::prelude::*;
 use configuration::{Config, ConfigPlugin};
 use handles::{Handles, HandlesPlugin};
-use level::blue_print::{BluePrint, WallBluePrint};
+use level::blue_print::{Blueprint, WallBluePrint};
 use level::bundles::WallBundle;
 use level::gate::{AndGate, GateTypes, OrGate};
 use level::logic_tree::LogicTree;

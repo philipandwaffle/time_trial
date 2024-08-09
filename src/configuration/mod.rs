@@ -1,4 +1,5 @@
 use bevy::{app::Plugin, log::info};
+use level::LevelConfig;
 use player::PlayerConfig;
 use std::{
     fs::{self, File},
@@ -11,9 +12,12 @@ use material::MaterialConfig;
 use mesh::MeshConfig;
 use serde::{Deserialize, Serialize};
 
-use crate::consts::{KEY_BINDINGS_CFG_PATH, MATERIAL_CFG_PATH, MESH_CFG_PATH, PLAYER_CFG_PATH};
+use crate::consts::{
+    KEY_BINDINGS_CFG_PATH, LEVEL_CFG_PATH, MATERIAL_CFG_PATH, MESH_CFG_PATH, PLAYER_CFG_PATH,
+};
 
 pub mod key_bindings;
+pub mod level;
 pub mod material;
 pub mod mesh;
 pub mod player;
@@ -22,6 +26,7 @@ pub struct ConfigPlugin;
 impl Plugin for ConfigPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(KeyBinds::load_cfg(KEY_BINDINGS_CFG_PATH))
+            .insert_resource(LevelConfig::load_cfg(LEVEL_CFG_PATH))
             .insert_resource(MaterialConfig::load_cfg(MATERIAL_CFG_PATH))
             .insert_resource(MeshConfig::load_cfg(MESH_CFG_PATH))
             .insert_resource(PlayerConfig::load_cfg(PLAYER_CFG_PATH));

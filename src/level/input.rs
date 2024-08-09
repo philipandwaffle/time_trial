@@ -8,6 +8,10 @@ pub trait Input {
 
 #[derive(Deserialize, Serialize)]
 pub enum InputType {
+    ButtonType,
+}
+#[derive(Deserialize, Serialize)]
+pub enum ButtonType {
     ToggleButton,
     PressButton,
 }
@@ -24,6 +28,11 @@ impl Input for ToggleButton {
         return 1;
     }
 }
+impl Default for ToggleButton {
+    fn default() -> Self {
+        Self { state: false }
+    }
+}
 
 #[derive(Component, Deserialize, Serialize)]
 pub struct PressButton {
@@ -35,5 +44,10 @@ impl Input for PressButton {
     }
     fn get_n(&self) -> usize {
         return 1;
+    }
+}
+impl Default for PressButton {
+    fn default() -> Self {
+        Self { state: false }
     }
 }
