@@ -17,10 +17,10 @@ pub struct LevelManagerPlugin;
 impl LevelManagerPlugin {
     pub fn gen_blueprint() -> Blueprint {
         let walls = vec![
-            WallBluePrint::new(vec2(500.0, -50.0), 0.0, vec2(500.0, 5.0)),
-            WallBluePrint::new(vec2(500.0, 50.0), 0.0, vec2(500.0, 5.0)),
-            WallBluePrint::new(vec2(50.0, 0.0), 0.0, vec2(5.0, 50.0)),
-            WallBluePrint::new(vec2(-50.0, 0.0), 0.0, vec2(5.0, 50.0)),
+            WallBluePrint::new(vec2(0.0, -50.0), 0.0, vec2(500.0, 5.0)),
+            WallBluePrint::new(vec2(0.0, 50.0), 0.0, vec2(500.0, 5.0)),
+            WallBluePrint::new(vec2(250.0, 0.0), 0.0, vec2(5.0, 100.0)),
+            WallBluePrint::new(vec2(-250.0, 0.0), 0.0, vec2(5.0, 100.0)),
         ];
 
         let inputs = vec![InputBluePrint::Button(ButtonBluePrint::new(

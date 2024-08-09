@@ -1,6 +1,6 @@
 {
     "dir": "levels",
     "cur_file": "cur.json",
-    "gen_on_start": false,
+    "gen_on_start": true,
     "save_on_start": false
 }
