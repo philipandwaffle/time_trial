@@ -1,6 +1,16 @@
-use bevy::prelude::Component;
+use bevy::{app::Plugin, prelude::Component};
 use serde::{Deserialize, Serialize};
 
+pub struct InputPlugin;
+impl Plugin for InputPlugin {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        use bevy_trait_query::RegisterExt;
+
+        app.register_component_as::<dyn Input, ToggleButton>()
+            .register_component_as::<dyn Input, PressButton>();
+    }
+}
+#[bevy_trait_query::queryable]
 pub trait Input {
     fn get_state(&self) -> Vec<bool>;
     fn get_n(&self) -> usize;

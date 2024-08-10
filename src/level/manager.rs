@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use bevy::{
     app::{Plugin, Startup},
     math::vec2,
-    prelude::{Commands, Entity, Res, ResMut, Resource},
+    prelude::{Commands, Res, ResMut, Resource},
 };
 
 use crate::{
@@ -11,7 +11,7 @@ use crate::{
     handles::Handles,
 };
 
-use super::{blue_print::*, gate::*, input::ButtonType, logic_tree::*};
+use super::{blue_print::*, gate::*, input::ButtonType, level::Level, logic_tree::*};
 
 pub struct LevelManagerPlugin;
 impl LevelManagerPlugin {
@@ -84,5 +84,5 @@ pub fn load_level(
 
 #[derive(Resource)]
 pub struct LevelManager {
-    cur_level_root: Option<Entity>,
+    cur_level_root: Option<Level>,
 }

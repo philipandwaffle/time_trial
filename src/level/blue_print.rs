@@ -11,6 +11,7 @@ use crate::{configuration::ConfigTag, handles::Handles};
 use super::{
     bundles::{LevelRootBundle, PressButtonBundle, ToggleButtonBundle, WallBundle},
     input::{ButtonType, InputType},
+    level::Level,
     logic_tree::LogicTree,
     output::OutputType,
 };
@@ -24,24 +25,26 @@ pub struct Blueprint {
 }
 impl ConfigTag for Blueprint {}
 impl Blueprint {
-    pub fn spawn(self, commands: &mut Commands, handles: &Handles) -> Entity {
-        let root_ent = LevelRootBundle::new().spawn(commands);
+    pub fn spawn(self, commands: &mut Commands, handles: &Handles) -> Level {
+        let root = LevelRootBundle::new().spawn(commands);
 
         for wall in self.walls {
             let wall_ent = wall.spawn(&handles.wall_material, &handles.wall_mesh, commands);
-            commands.get_entity(root_ent).unwrap().add_child(wall_ent);
+            commands.get_entity(root).unwrap().add_child(wall_ent);
         }
 
+        let mut inputs = Vec::with_capacity(self.inputs.len());
         for input in self.inputs {
             let input_ent = match input {
                 InputBluePrint::Button(button_blue_print) => {
                     button_blue_print.spawn(commands, handles)
                 }
             };
-            commands.get_entity(root_ent).unwrap().add_child(input_ent);
+            commands.get_entity(root).unwrap().add_child(input_ent);
+            inputs.push(input_ent);
         }
 
-        return root_ent;
+        return Level::new(root, self.logic_tree, inputs, vec![]);
     }
 }
 

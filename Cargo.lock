@@ -310,6 +310,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy-trait-query"
+version = "0.5.1"
+source = "git+https://github.com/RobWalt/bevy-trait-query.git?branch=bevy-0.14-partial-update#215b9068e8457d96ddcd4c8efa9605ba0f8feda5"
+dependencies = [
+ "bevy-trait-query-impl",
+ "bevy_app",
+ "bevy_core",
+ "bevy_ecs",
+ "tracing",
+]
+
+[[package]]
+name = "bevy-trait-query-impl"
+version = "0.5.1"
+source = "git+https://github.com/RobWalt/bevy-trait-query.git?branch=bevy-0.14-partial-update#215b9068e8457d96ddcd4c8efa9605ba0f8feda5"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.72",
+]
+
+[[package]]
 name = "bevy_a11y"
 version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3746,6 +3769,7 @@ name = "time_trial"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-trait-query",
  "bevy_rapier2d",
  "chrono",
  "serde",

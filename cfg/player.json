@@ -2,6 +2,6 @@
     "collider_radius": 5.0,
     "cam_scale": 1.0,
     "move_speed": 10.0,
-    "linear_damping": 4.0,
+    "linear_damping": 10.0,
     "angular_damping": 1.0
 }
