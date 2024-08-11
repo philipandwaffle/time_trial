@@ -1,17 +1,25 @@
 use std::f32::consts::PI;
 
 use bevy::{
-    app::{Plugin, Startup},
+    app::{Plugin, Startup, Update},
     math::vec2,
-    prelude::{Commands, Res, ResMut, Resource},
+    prelude::{Commands, Query, Res, ResMut, Resource},
 };
+use bevy_trait_query::One;
 
 use crate::{
     configuration::{level::LevelConfig, Config},
     handles::Handles,
 };
 
-use super::{blue_print::*, gate::*, input::ButtonType, level::Level, logic_tree::*};
+use super::{
+    blue_print::*,
+    gate::*,
+    input::{ButtonType, Input},
+    level::Level,
+    logic_tree::*,
+    output::Output,
+};
 
 pub struct LevelManagerPlugin;
 impl LevelManagerPlugin {
@@ -23,7 +31,7 @@ impl LevelManagerPlugin {
             WallBluePrint::new(vec2(-250.0, 0.0), 0.0, vec2(5.0, 100.0)),
         ];
 
-        let inputs = vec![InputBluePrint::Button(ButtonBluePrint::new(
+        let inputs = vec![InputBlueprint::Button(ButtonBlueprint::new(
             vec2(100.0, 0.0),
             5.0,
             ButtonType::PressButton,
@@ -54,10 +62,9 @@ impl Plugin for LevelManagerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         // Self::gen_blueprint().save_cfg("levels/001.json");
 
-        app.insert_resource(LevelManager {
-            cur_level_root: None,
-        })
-        .add_systems(Startup, load_level);
+        app.insert_resource(LevelManager { cur_level: None })
+            .add_systems(Startup, load_level)
+            .add_systems(Update, update_level);
     }
 }
 
@@ -73,16 +80,26 @@ pub fn load_level(
             blueprint.save_cfg(&format!("{}/{}", level_config.dir, level_config.cur_file));
         }
 
-        level_manager.cur_level_root = Some(blueprint.spawn(&mut commands, &handles));
+        level_manager.cur_level = Some(blueprint.spawn(&mut commands, &handles));
     } else {
-        level_manager.cur_level_root = Some(
+        level_manager.cur_level = Some(
             Blueprint::load_cfg(&format!("{}/{}", level_config.dir, level_config.cur_file))
                 .spawn(&mut commands, &handles),
         );
     }
 }
 
+pub fn update_level(
+    mut level_manager: ResMut<LevelManager>,
+    inputs: Query<One<&dyn Input>>,
+    mut outputs: Query<One<&mut dyn Output>>,
+) {
+    if let Some(level) = &mut level_manager.cur_level {
+        level.update_state(&inputs, &mut outputs);
+    }
+}
+
 #[derive(Resource)]
 pub struct LevelManager {
-    cur_level_root: Option<Level>,
+    cur_level: Option<Level>,
 }

@@ -1,4 +1,8 @@
-use bevy::{app::Plugin, prelude::Component};
+use bevy::{
+    app::{Plugin, Update},
+    prelude::{Component, Entity, Query, Res},
+};
+use bevy_rapier2d::plugin::RapierContext;
 use serde::{Deserialize, Serialize};
 
 pub struct InputPlugin;
@@ -8,11 +12,14 @@ impl Plugin for InputPlugin {
 
         app.register_component_as::<dyn Input, ToggleButton>()
             .register_component_as::<dyn Input, PressButton>();
+
+        app.add_systems(Update, (update_toggle_button, update_press_button));
     }
 }
+
 #[bevy_trait_query::queryable]
 pub trait Input {
-    fn get_state(&self) -> Vec<bool>;
+    fn append_state(&self, vec: &mut Vec<bool>);
     fn get_n(&self) -> usize;
 }
 
@@ -29,10 +36,11 @@ pub enum ButtonType {
 #[derive(Component, Deserialize, Serialize)]
 pub struct ToggleButton {
     pub state: bool,
+    collider_state: bool,
 }
 impl Input for ToggleButton {
-    fn get_state(&self) -> Vec<bool> {
-        return vec![self.state];
+    fn append_state(&self, vec: &mut Vec<bool>) {
+        vec.push(self.state);
     }
     fn get_n(&self) -> usize {
         return 1;
@@ -40,7 +48,22 @@ impl Input for ToggleButton {
 }
 impl Default for ToggleButton {
     fn default() -> Self {
-        Self { state: false }
+        Self {
+            state: false,
+            collider_state: false,
+        }
+    }
+}
+pub fn update_toggle_button(
+    rapier_context: Res<RapierContext>,
+    mut buttons: Query<(Entity, &mut ToggleButton)>,
+) {
+    for (ent, mut button) in buttons.iter_mut() {
+        let cur_collider = rapier_context.contact_pairs_with(ent).count() > 0;
+        if button.collider_state != cur_collider {
+            button.collider_state = cur_collider;
+            button.state = !button.state;
+        }
     }
 }
 
@@ -49,8 +72,8 @@ pub struct PressButton {
     pub state: bool,
 }
 impl Input for PressButton {
-    fn get_state(&self) -> Vec<bool> {
-        return vec![self.state];
+    fn append_state(&self, vec: &mut Vec<bool>) {
+        vec.push(self.state);
     }
     fn get_n(&self) -> usize {
         return 1;
@@ -59,5 +82,13 @@ impl Input for PressButton {
 impl Default for PressButton {
     fn default() -> Self {
         Self { state: false }
+    }
+}
+pub fn update_press_button(
+    rapier_context: Res<RapierContext>,
+    mut buttons: Query<(Entity, &mut PressButton)>,
+) {
+    for (ent, mut button) in buttons.iter_mut() {
+        button.state = rapier_context.contact_pairs_with(ent).count() > 0
     }
 }

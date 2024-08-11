@@ -9,18 +9,18 @@ use serde::{Deserialize, Serialize};
 use crate::{configuration::ConfigTag, handles::Handles};
 
 use super::{
-    bundles::{LevelRootBundle, PressButtonBundle, ToggleButtonBundle, WallBundle},
+    bundles::{DoorBundle, LevelRootBundle, PressButtonBundle, ToggleButtonBundle, WallBundle},
     input::{ButtonType, InputType},
     level::Level,
     logic_tree::LogicTree,
-    output::OutputType,
+    output::{self, OutputType},
 };
 
 #[derive(Deserialize, Serialize)]
 pub struct Blueprint {
     pub walls: Vec<WallBluePrint>,
-    pub inputs: Vec<InputBluePrint>,
-    pub outputs: Vec<OutputType>,
+    pub inputs: Vec<InputBlueprint>,
+    pub outputs: Vec<OutputBluePrint>,
     pub logic_tree: LogicTree,
 }
 impl ConfigTag for Blueprint {}
@@ -33,18 +33,26 @@ impl Blueprint {
             commands.get_entity(root).unwrap().add_child(wall_ent);
         }
 
-        let mut inputs = Vec::with_capacity(self.inputs.len());
+        let mut input_ents = Vec::with_capacity(self.inputs.len());
         for input in self.inputs {
             let input_ent = match input {
-                InputBluePrint::Button(button_blue_print) => {
+                InputBlueprint::Button(button_blue_print) => {
                     button_blue_print.spawn(commands, handles)
                 }
             };
             commands.get_entity(root).unwrap().add_child(input_ent);
-            inputs.push(input_ent);
+            input_ents.push(input_ent);
         }
 
-        return Level::new(root, self.logic_tree, inputs, vec![]);
+        let mut output_ents = Vec::with_capacity(self.outputs.len());
+        for output in self.outputs {
+            let output_ent = match output {
+                OutputBluePrint::Door(door) => door.spawn(commands, handles),
+            };
+            output_ents.push(output_ent)
+        }
+
+        return Level::new(root, self.logic_tree, input_ents, output_ents);
     }
 }
 
@@ -70,17 +78,17 @@ impl WallBluePrint {
 }
 
 #[derive(Deserialize, Serialize)]
-pub enum InputBluePrint {
-    Button(ButtonBluePrint),
+pub enum InputBlueprint {
+    Button(ButtonBlueprint),
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct ButtonBluePrint {
+pub struct ButtonBlueprint {
     pos: Vec2,
     radius: f32,
     button_type: ButtonType,
 }
-impl ButtonBluePrint {
+impl ButtonBlueprint {
     pub fn new(pos: Vec2, radius: f32, button_type: ButtonType) -> Self {
         return Self {
             pos,
@@ -106,5 +114,33 @@ impl ButtonBluePrint {
             )
             .spawn(commands),
         };
+    }
+}
+
+#[derive(Deserialize, Serialize)]
+pub enum OutputBluePrint {
+    Door(DoorBlueprint),
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct DoorBlueprint {
+    pos: Vec2,
+    z_rot: f32,
+    shape: Vec2,
+}
+impl DoorBlueprint {
+    pub fn new(pos: Vec2, z_rot: f32, shape: Vec2) -> Self {
+        return Self { pos, z_rot, shape };
+    }
+
+    pub fn spawn(self, commands: &mut Commands, handles: &Handles) -> Entity {
+        return DoorBundle::new(
+            &handles.door_material,
+            &handles.door_mesh,
+            self.pos,
+            self.z_rot,
+            self.shape,
+        )
+        .spawn(commands);
     }
 }

@@ -1,6 +1,6 @@
-use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Query, Resource};
-
 use super::{blue_print::Blueprint, input::Input, logic_tree::LogicTree, output::Output};
+use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Query, Resource};
+use bevy_trait_query::*;
 
 #[derive(Resource)]
 pub struct Level {
@@ -28,13 +28,23 @@ impl Level {
         commands.entity(self.root).despawn_recursive();
     }
 
-    pub fn update_state(&mut self, inputs: Query<&dyn Input>, outputs: Query<&dyn Output>) {
-        let input = vec![];
-        for input in self.inputs {
-            let foo = inputs.get(input).unwrap();
-            foo.get_state()
+    pub fn update_state(
+        &mut self,
+        inputs: &Query<One<&dyn Input>>,
+        outputs: &mut Query<One<&mut dyn Output>>,
+    ) {
+        let mut input_vec = vec![];
+        for input_ent in self.inputs.iter() {
+            if let Ok(input_component) = inputs.get(*input_ent) {
+                input_component.append_state(&mut input_vec);
+            }
         }
 
-        self.logic_tree.process(input)
+        let mut output = self.logic_tree.process(input_vec);
+        for output_ent in self.outputs.iter() {
+            if let Ok(mut output_component) = outputs.get_mut(*output_ent) {
+                output_component.pop_state(&mut output);
+            }
+        }
     }
 }

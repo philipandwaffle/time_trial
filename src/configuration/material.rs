@@ -9,6 +9,7 @@ pub struct MaterialConfig {
     pub player: HSL,
     pub press_button: HSL,
     pub toggle_button: HSL,
+    pub door: HSL,
 }
 impl ConfigTag for MaterialConfig {}
 

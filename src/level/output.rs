@@ -1,24 +1,29 @@
-use bevy::{app::Plugin, prelude::Component};
+use bevy::{
+    app::{Plugin, Update},
+    prelude::{Changed, Commands, Component, Entity, Query},
+};
+use bevy_rapier2d::prelude::Sensor;
+use bevy_trait_query::RegisterExt;
 use serde::{Deserialize, Serialize};
 
 pub struct OutputPlugin;
 impl Plugin for OutputPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        use bevy_trait_query::RegisterExt;
-
         app.register_component_as::<dyn Output, Door>();
+
+        app.add_systems(Update, update_door);
     }
 }
 
 #[bevy_trait_query::queryable]
 pub trait Output {
     fn get_n(&self) -> usize;
-    fn update_state(&mut self, new_state: Vec<bool>);
+    fn pop_state(&mut self, new_state: &mut Vec<bool>);
 }
 
 #[derive(Deserialize, Serialize)]
 pub enum OutputType {
-    Gate,
+    Door,
 }
 
 #[derive(Component)]
@@ -29,7 +34,18 @@ impl Output for Door {
     fn get_n(&self) -> usize {
         return 1;
     }
-    fn update_state(&mut self, new_state: Vec<bool>) {
-        self.state = new_state[0];
+    fn pop_state(&mut self, new_state: &mut Vec<bool>) {
+        self.state = new_state.pop().unwrap();
+    }
+}
+pub fn update_door(mut commands: Commands, mut doors: Query<(Entity, &Door), Changed<Door>>) {
+    for (ent, door) in doors.iter_mut() {
+        if let Some(mut ent_commands) = commands.get_entity(ent) {
+            if door.state {
+                ent_commands.remove::<Sensor>();
+            } else {
+                ent_commands.insert(Sensor);
+            }
+        }
     }
 }
