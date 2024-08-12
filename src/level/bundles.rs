@@ -9,7 +9,10 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{Collider, Sensor};
 
-use super::input::{PressButton, ToggleButton};
+use super::{
+    input::{PressButton, ToggleButton},
+    output::Door,
+};
 
 #[derive(Bundle)]
 pub struct WallBundle {
@@ -124,6 +127,7 @@ impl ButtonBundle {
 pub struct DoorBundle {
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     collider: Collider,
+    door: Door,
 }
 impl DoorBundle {
     pub fn new(
@@ -145,6 +149,7 @@ impl DoorBundle {
                 ..default()
             },
             collider: Collider::cuboid(0.5, 0.5),
+            door: Door::default(),
         };
     }
 

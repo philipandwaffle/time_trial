@@ -36,7 +36,7 @@ pub enum ButtonType {
 #[derive(Component, Deserialize, Serialize)]
 pub struct ToggleButton {
     pub state: bool,
-    collider_state: bool,
+    prev_state: bool,
 }
 impl Input for ToggleButton {
     fn append_state(&self, vec: &mut Vec<bool>) {
@@ -50,7 +50,7 @@ impl Default for ToggleButton {
     fn default() -> Self {
         Self {
             state: false,
-            collider_state: false,
+            prev_state: false,
         }
     }
 }
@@ -59,10 +59,12 @@ pub fn update_toggle_button(
     mut buttons: Query<(Entity, &mut ToggleButton)>,
 ) {
     for (ent, mut button) in buttons.iter_mut() {
-        let cur_collider = rapier_context.contact_pairs_with(ent).count() > 0;
-        if button.collider_state != cur_collider {
-            button.collider_state = cur_collider;
-            button.state = !button.state;
+        let cur_collider_state = rapier_context.intersection_pairs_with(ent).count() > 0;
+        if button.prev_state != cur_collider_state {
+            if !button.prev_state && cur_collider_state {
+                button.state = !button.state;
+            }
+            button.prev_state = cur_collider_state;
         }
     }
 }
@@ -89,6 +91,6 @@ pub fn update_press_button(
     mut buttons: Query<(Entity, &mut PressButton)>,
 ) {
     for (ent, mut button) in buttons.iter_mut() {
-        button.state = rapier_context.contact_pairs_with(ent).count() > 0
+        button.state = rapier_context.intersection_pairs_with(ent).count() > 0;
     }
 }

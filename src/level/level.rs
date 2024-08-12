@@ -1,5 +1,7 @@
+use std::ops::Deref;
+
 use super::{blue_print::Blueprint, input::Input, logic_tree::LogicTree, output::Output};
-use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Query, Resource};
+use bevy::prelude::{Commands, DespawnRecursiveExt, DetectChangesMut, Entity, Query, Resource};
 use bevy_trait_query::*;
 
 #[derive(Resource)]
@@ -41,9 +43,13 @@ impl Level {
         }
 
         let mut output = self.logic_tree.process(input_vec);
+        // println!("{:?}", output);
         for output_ent in self.outputs.iter() {
             if let Ok(mut output_component) = outputs.get_mut(*output_ent) {
-                output_component.pop_state(&mut output);
+                if output_component.needs_state_update(&mut output) {
+                    output_component.pop_state(&mut output);
+                    output_component.set_changed();
+                }
             }
         }
     }

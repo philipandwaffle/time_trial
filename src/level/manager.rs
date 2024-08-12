@@ -15,10 +15,10 @@ use crate::{
 use super::{
     blue_print::*,
     gate::*,
-    input::{ButtonType, Input},
+    input::{ButtonType, Input, InputPlugin},
     level::Level,
     logic_tree::*,
-    output::Output,
+    output::{Output, OutputPlugin},
 };
 
 pub struct LevelManagerPlugin;
@@ -31,27 +31,34 @@ impl LevelManagerPlugin {
             WallBluePrint::new(vec2(-250.0, 0.0), 0.0, vec2(5.0, 100.0)),
         ];
 
-        let inputs = vec![InputBlueprint::Button(ButtonBlueprint::new(
-            vec2(100.0, 0.0),
-            5.0,
-            ButtonType::PressButton,
+        let inputs = vec![
+            InputBlueprint::Button(ButtonBlueprint::new(
+                vec2(-50.0, -30.0),
+                5.0,
+                ButtonType::PressButton,
+            )),
+            InputBlueprint::Button(ButtonBlueprint::new(
+                vec2(-50.0, 30.0),
+                5.0,
+                ButtonType::ToggleButton,
+            )),
+        ];
+
+        let outputs = vec![OutputBluePrint::Door(DoorBlueprint::new(
+            vec2(50.0, 0.0),
+            0.0,
+            vec2(5.0, 100.0),
         ))];
 
         let logic_tree = LogicTree::new(
-            vec![
-                vec![
-                    GateTypes::OrGate(OrGate::default()),
-                    GateTypes::OrGate(OrGate::default()),
-                ],
-                vec![GateTypes::AndGate(AndGate::default())],
-            ],
-            vec![vec![0, 1, 2, 3], vec![0, 1], vec![0]],
+            vec![vec![GateTypes::OrGate(OrGate::default())]],
+            vec![vec![0, 1], vec![0]],
         );
 
         let bp = Blueprint {
             walls,
             inputs,
-            outputs: vec![],
+            outputs: outputs,
             logic_tree,
         };
 
@@ -60,7 +67,7 @@ impl LevelManagerPlugin {
 }
 impl Plugin for LevelManagerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        // Self::gen_blueprint().save_cfg("levels/001.json");
+        app.add_plugins((InputPlugin, OutputPlugin));
 
         app.insert_resource(LevelManager { cur_level: None })
             .add_systems(Startup, load_level)
