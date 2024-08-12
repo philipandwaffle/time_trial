@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use bevy::{
     app::{Plugin, Startup, Update},
     math::vec2,
@@ -13,7 +11,12 @@ use crate::{
 };
 
 use super::{
-    blue_print::*,
+    blueprints::{
+        input::{ButtonBlueprint, InputBlueprint},
+        level::Blueprint,
+        output::{DoorBlueprint, OutputBluePrint},
+        wall::WallBluePrint,
+    },
     gate::*,
     input::{ButtonType, Input, InputPlugin},
     level::Level,

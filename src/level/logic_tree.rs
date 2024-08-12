@@ -1,13 +1,7 @@
 use core::panic;
-
-use bevy::core_pipeline::core_2d::graph::input;
 use serde::{Deserialize, Serialize};
 
-use super::{
-    gate::{self, Gate, GateTypes},
-    input::Input,
-    output::Output,
-};
+use super::gate::GateTypes;
 
 #[derive(Deserialize, Serialize)]
 pub struct LogicTree {

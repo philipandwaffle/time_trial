@@ -1,4 +1,4 @@
-pub mod blue_print;
+pub mod blueprints;
 pub mod bundles;
 pub mod gate;
 pub mod input;
