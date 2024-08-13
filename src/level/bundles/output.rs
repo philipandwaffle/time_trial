@@ -8,6 +8,8 @@ use bevy_rapier2d::prelude::Collider;
 
 use crate::level::output::Door;
 
+use super::consts::OUTPUT_Z_OFFSET;
+
 #[derive(Bundle)]
 pub struct DoorBundle {
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
@@ -27,7 +29,7 @@ impl DoorBundle {
                 mesh: mesh.clone(),
                 material: material.clone(),
                 transform: Transform {
-                    translation: pos.extend(-1.0),
+                    translation: pos.extend(OUTPUT_Z_OFFSET),
                     rotation: Quat::from_rotation_z(z_rot),
                     scale: shape.extend(1.0),
                 },

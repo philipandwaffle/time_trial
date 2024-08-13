@@ -6,6 +6,8 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{Collider, Damping, LockedAxes, RigidBody, Velocity};
 
+use super::consts::PROP_Z_OFFSET;
+
 #[derive(Bundle)]
 pub struct BoxBundle {
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
@@ -26,7 +28,7 @@ impl BoxBundle {
                 mesh: mesh.clone(),
                 material: material.clone(),
                 transform: Transform {
-                    translation: pos.extend(0.1),
+                    translation: pos.extend(PROP_Z_OFFSET),
                     rotation: Quat::from_rotation_z(z_rot),
                     scale: shape.extend(1.0),
                 },

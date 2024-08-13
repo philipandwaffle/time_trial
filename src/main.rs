@@ -48,8 +48,7 @@ fn main() {
             HandlesPlugin,
             LevelManagerPlugin,
             PlayerPlugin,
-            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
-            RapierDebugRenderPlugin::default(),
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),            
         ))
         .run();
 }

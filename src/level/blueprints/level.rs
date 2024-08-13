@@ -53,6 +53,7 @@ impl Blueprint {
             let output_ent = match output {
                 OutputBluePrint::Door(door) => door.spawn(commands, handles),
             };
+            commands.get_entity(root).unwrap().add_child(output_ent);
             output_ents.push(output_ent)
         }
 

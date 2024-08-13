@@ -8,6 +8,8 @@ use bevy_rapier2d::prelude::{Collider, Sensor};
 
 use crate::level::input::{PressButton, ToggleButton};
 
+use super::consts::INPUT_Z_OFFSET;
+
 #[derive(Bundle)]
 pub struct ToggleButtonBundle {
     button_bundle: ButtonBundle,
@@ -72,7 +74,7 @@ impl ButtonBundle {
                 mesh: mesh.clone(),
                 material: material.clone(),
                 transform: Transform {
-                    translation: pos.extend(0.0),
+                    translation: pos.extend(INPUT_Z_OFFSET),
                     scale: vec3(radius, radius, 1.0),
                     ..default()
                 },
