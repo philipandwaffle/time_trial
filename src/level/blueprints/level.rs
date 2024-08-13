@@ -7,11 +7,14 @@ use crate::{
     level::{bundles::level::LevelRootBundle, level::Level, logic_tree::LogicTree},
 };
 
-use super::{input::InputBlueprint, output::OutputBluePrint, wall::WallBluePrint};
+use super::{
+    input::InputBlueprint, output::OutputBluePrint, props::PropBlueprint, wall::WallBluePrint,
+};
 
 #[derive(Deserialize, Serialize)]
 pub struct Blueprint {
     pub walls: Vec<WallBluePrint>,
+    pub props: Vec<PropBlueprint>,
     pub inputs: Vec<InputBlueprint>,
     pub outputs: Vec<OutputBluePrint>,
     pub logic_tree: LogicTree,
@@ -25,12 +28,20 @@ impl Blueprint {
             let wall_ent = wall.spawn(&handles.wall_material, &handles.wall_mesh, commands);
             commands.get_entity(root).unwrap().add_child(wall_ent);
         }
+        for prop in self.props {
+            let prop_ent = match prop {
+                PropBlueprint::BoxBlueprint(box_blueprint) => {
+                    box_blueprint.spawn(commands, handles)
+                }
+            };
+            commands.get_entity(root).unwrap().add_child(prop_ent);
+        }
 
         let mut input_ents = Vec::with_capacity(self.inputs.len());
         for input in self.inputs {
             let input_ent = match input {
-                InputBlueprint::Button(button_blue_print) => {
-                    button_blue_print.spawn(commands, handles)
+                InputBlueprint::Button(button_blueprint) => {
+                    button_blueprint.spawn(commands, handles)
                 }
             };
             commands.get_entity(root).unwrap().add_child(input_ent);

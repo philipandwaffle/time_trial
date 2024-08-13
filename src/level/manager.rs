@@ -15,6 +15,7 @@ use super::{
         input::{ButtonBlueprint, InputBlueprint},
         level::Blueprint,
         output::{DoorBlueprint, OutputBluePrint},
+        props::{BoxBlueprint, PropBlueprint},
         wall::WallBluePrint,
     },
     gate::*,
@@ -33,6 +34,12 @@ impl LevelManagerPlugin {
             WallBluePrint::new(vec2(250.0, 0.0), 0.0, vec2(5.0, 100.0)),
             WallBluePrint::new(vec2(-250.0, 0.0), 0.0, vec2(5.0, 100.0)),
         ];
+
+        let props = vec![PropBlueprint::BoxBlueprint(BoxBlueprint::new(
+            vec2(-100.0, 0.0),
+            0.0,
+            vec2(5.0, 5.0),
+        ))];
 
         let inputs = vec![
             InputBlueprint::Button(ButtonBlueprint::new(
@@ -60,6 +67,7 @@ impl LevelManagerPlugin {
 
         let bp = Blueprint {
             walls,
+            props,
             inputs,
             outputs: outputs,
             logic_tree,
