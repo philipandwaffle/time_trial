@@ -71,7 +71,7 @@ where
             Err(err) => panic!("Error Opening file at path {path_str}, {err:?}"),
         };
 
-        if let Err(err) = serde_json::to_writer(writer, self) {
+        if let Err(err) = serde_json::to_writer_pretty(writer, self) {
             panic!("Error writing JSON to path {path_str}, {err:?}")
         }
     }

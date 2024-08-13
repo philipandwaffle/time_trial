@@ -13,7 +13,7 @@ use crate::{
 use super::{
     blueprints::{
         input::{ButtonBlueprint, InputBlueprint},
-        level::Blueprint,
+        level::LevelBlueprint,
         output::{DoorBlueprint, OutputBluePrint},
         props::{BoxBlueprint, PropBlueprint},
         wall::WallBluePrint,
@@ -27,7 +27,7 @@ use super::{
 
 pub struct LevelManagerPlugin;
 impl LevelManagerPlugin {
-    pub fn gen_blueprint() -> Blueprint {
+    pub fn gen_blueprint() -> LevelBlueprint {
         let walls = vec![
             WallBluePrint::new(vec2(0.0, -50.0), 0.0, vec2(500.0, 5.0)),
             WallBluePrint::new(vec2(0.0, 50.0), 0.0, vec2(500.0, 5.0)),
@@ -65,13 +65,7 @@ impl LevelManagerPlugin {
             vec![vec![0, 1], vec![0]],
         );
 
-        let bp = Blueprint {
-            walls,
-            props,
-            inputs,
-            outputs: outputs,
-            logic_tree,
-        };
+        let bp = LevelBlueprint::new(walls, props, inputs, outputs, logic_tree);
 
         return bp;
     }
@@ -95,15 +89,13 @@ pub fn load_level(
     if level_config.gen_on_start {
         let blueprint = LevelManagerPlugin::gen_blueprint();
         if level_config.save_on_start {
-            blueprint.save_cfg(&format!("{}/{}", level_config.dir, level_config.cur_file));
+            blueprint.save_cfg(&format!("{}/{}", level_config.dir, level_config.cur_level));
         }
 
         level_manager.cur_level = Some(blueprint.spawn(&mut commands, &handles));
     } else {
-        level_manager.cur_level = Some(
-            Blueprint::load_cfg(&format!("{}/{}", level_config.dir, level_config.cur_file))
-                .spawn(&mut commands, &handles),
-        );
+        level_manager.cur_level =
+            Some(LevelBlueprint::load_cfg(&level_config.dir).spawn(&mut commands, &handles));
     }
 }
 
