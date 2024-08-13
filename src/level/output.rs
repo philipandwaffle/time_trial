@@ -1,6 +1,6 @@
 use bevy::{
     app::{Plugin, Update},
-    prelude::{Changed, Commands, Component, Entity, Query},
+    prelude::{Changed, Commands, Component, Entity, Query, ViewVisibility, Visibility},
 };
 use bevy_rapier2d::prelude::Sensor;
 use bevy_trait_query::RegisterExt;
@@ -51,13 +51,18 @@ impl Output for Door {
         self.state = new_state.pop().unwrap();
     }
 }
-pub fn update_door(mut commands: Commands, mut doors: Query<(Entity, &Door), Changed<Door>>) {
-    for (ent, door) in doors.iter_mut() {
+pub fn update_door(
+    mut commands: Commands,
+    mut doors: Query<(Entity, &Door, &mut Visibility), Changed<Door>>,
+) {
+    for (ent, door, mut visibility) in doors.iter_mut() {
         if let Some(mut ent_commands) = commands.get_entity(ent) {
             if door.state {
                 ent_commands.insert(Sensor);
+                *visibility = Visibility::Hidden;
             } else {
                 ent_commands.remove::<Sensor>();
+                *visibility = Visibility::Inherited;
             }
         }
     }
