@@ -6,9 +6,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{Collider, Sensor};
 
-use crate::level::input::{PressButton, ToggleButton};
-
-use super::consts::INPUT_Z_OFFSET;
+use crate::{consts::INPUT_Z_OFFSET, level::input::{PressButton, ToggleButton}};
 
 #[derive(Bundle)]
 pub struct ToggleButtonBundle {

@@ -3,7 +3,7 @@ use bevy::{
     prelude::{default, Bundle, Commands, Entity, Transform, TransformBundle, VisibilityBundle},
 };
 
-use super::consts::LEVEL_Z_OFFSET;
+use crate::consts::LEVEL_Z_OFFSET;
 
 #[derive(Bundle, Default)]
 pub struct LevelRootBundle {

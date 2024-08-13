@@ -6,7 +6,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::Collider;
 
-use super::consts::WALL_Z_OFFSET;
+use crate::consts::WALL_Z_OFFSET;
 
 #[derive(Bundle)]
 pub struct WallBundle {

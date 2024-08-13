@@ -6,9 +6,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::Collider;
 
-use crate::level::output::Door;
-
-use super::consts::OUTPUT_Z_OFFSET;
+use crate::{consts::OUTPUT_Z_OFFSET, level::output::Door};
 
 #[derive(Bundle)]
 pub struct DoorBundle {

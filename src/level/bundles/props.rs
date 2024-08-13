@@ -6,7 +6,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{Collider, Damping, LockedAxes, RigidBody, Velocity};
 
-use super::consts::PROP_Z_OFFSET;
+use crate::consts::PROP_Z_OFFSET;
 
 #[derive(Bundle)]
 pub struct BoxBundle {
