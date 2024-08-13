@@ -1,4 +1,4 @@
-use std::{fs::create_dir, path::Path};
+use std::{collections::HashMap, fs::create_dir, path::Path};
 
 use bevy::{
     log::error,
@@ -7,8 +7,8 @@ use bevy::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    configuration::{Config, ConfigTag},
-    consts::{INPUTS_FILE, LOGIC_TREE_FILE, OUTPUTS_FILE, PROPS_FILE, WALLS_FILE},
+    configuration::{material::HSL, Config, ConfigTag},
+    consts::{INPUTS_FILE, LOGIC_TREE_FILE, MATERIALS_FILE, OUTPUTS_FILE, PROPS_FILE, WALLS_FILE},
     handles::Handles,
     level::{bundles::level::LevelRootBundle, level::Level, logic_tree::LogicTree},
 };
@@ -18,11 +18,12 @@ use super::{
 };
 
 pub struct LevelBlueprint {
-    pub walls: WallBlueprints,
-    pub props: PropBlueprints,
-    pub inputs: InputBlueprints,
-    pub outputs: OutputBlueprints,
+    walls: WallBlueprints,
+    props: PropBlueprints,
+    inputs: InputBlueprints,
+    outputs: OutputBlueprints,
     pub logic_tree: LogicTree,
+    level_materials: LevelMaterials,
 }
 impl Config for LevelBlueprint {
     fn load_cfg(path: &str) -> Self {
@@ -32,6 +33,7 @@ impl Config for LevelBlueprint {
             inputs: InputBlueprints::load_cfg(&format!("{}/{}", path, INPUTS_FILE)),
             outputs: OutputBlueprints::load_cfg(&format!("{}/{}", path, OUTPUTS_FILE)),
             logic_tree: LogicTree::load_cfg(&format!("{}/{}", path, LOGIC_TREE_FILE)),
+            level_materials: LevelMaterials::load_cfg(&format!("{}/{}", path, MATERIALS_FILE)),
         };
     }
 
@@ -57,6 +59,7 @@ impl LevelBlueprint {
         inputs: Vec<InputBlueprint>,
         outputs: Vec<OutputBluePrint>,
         logic_tree: LogicTree,
+        level_materials: HashMap<String, HSL>,
     ) -> Self {
         return Self {
             walls: WallBlueprints(walls),
@@ -64,6 +67,7 @@ impl LevelBlueprint {
             inputs: InputBlueprints(inputs),
             outputs: OutputBlueprints(outputs),
             logic_tree,
+            level_materials: LevelMaterials(level_materials),
         };
     }
 
@@ -108,19 +112,23 @@ impl LevelBlueprint {
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct WallBlueprints(Vec<WallBluePrint>);
+struct WallBlueprints(Vec<WallBluePrint>);
 impl ConfigTag for WallBlueprints {}
 
 #[derive(Deserialize, Serialize)]
-pub struct PropBlueprints(Vec<PropBlueprint>);
+struct PropBlueprints(Vec<PropBlueprint>);
 impl ConfigTag for PropBlueprints {}
 
 #[derive(Deserialize, Serialize)]
-pub struct InputBlueprints(Vec<InputBlueprint>);
+struct InputBlueprints(Vec<InputBlueprint>);
 impl ConfigTag for InputBlueprints {}
 
 #[derive(Deserialize, Serialize)]
-pub struct OutputBlueprints(Vec<OutputBluePrint>);
+struct OutputBlueprints(Vec<OutputBluePrint>);
 impl ConfigTag for OutputBlueprints {}
 
 impl ConfigTag for LogicTree {}
+
+#[derive(Deserialize, Serialize)]
+pub struct LevelMaterials(HashMap<String, HSL>);
+impl ConfigTag for LevelMaterials {}

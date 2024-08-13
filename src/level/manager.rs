@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bevy::{
     app::{Plugin, Startup, Update},
     math::vec2,
@@ -6,7 +8,7 @@ use bevy::{
 use bevy_trait_query::One;
 
 use crate::{
-    configuration::{level::LevelConfig, Config},
+    configuration::{level::LevelConfig, material::HSL, Config},
     handles::Handles,
 };
 
@@ -65,7 +67,9 @@ impl LevelManagerPlugin {
             vec![vec![0, 1], vec![0]],
         );
 
-        let bp = LevelBlueprint::new(walls, props, inputs, outputs, logic_tree);
+        let level_materials = HashMap::<String, HSL>::new();
+
+        let bp = LevelBlueprint::new(walls, props, inputs, outputs, logic_tree, level_materials);
 
         return bp;
     }
