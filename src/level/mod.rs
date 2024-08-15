@@ -6,3 +6,4 @@ mod level;
 mod logic_tree;
 pub mod manager;
 mod output;
+pub mod level_change;

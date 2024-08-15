@@ -95,12 +95,12 @@ impl Plugin for LevelManagerPlugin {
 
         app.insert_resource(LevelManager { cur_level: None })
             .insert_resource(LevelMaterialHandles::default())
-            .add_systems(Startup, load_level)
-            .add_systems(Update, update_level);
+            .add_systems(Startup, setup_level)
+            .add_systems(Update, update_level_state);
     }
 }
 
-pub fn load_level(
+fn setup_level(
     mut commands: Commands,
     handles: Res<Handles>,
     level_config: Res<LevelConfig>,
@@ -126,7 +126,7 @@ pub fn load_level(
         Some(blueprint.spawn(&mut commands, &handles, &level_material_handles));
 }
 
-pub fn update_level(
+fn update_level_state(
     mut level_manager: ResMut<LevelManager>,
     inputs: Query<One<&dyn Input>>,
     mut outputs: Query<One<&mut dyn Output>>,
@@ -139,4 +139,19 @@ pub fn update_level(
 #[derive(Resource)]
 pub struct LevelManager {
     cur_level: Option<Level>,
+}
+impl LevelManager {
+    pub fn change_level(
+        &mut self,
+        commands: &mut Commands,
+        handles: &Handles,
+        level_material_handles: &LevelMaterialHandles,
+        blueprint: LevelBlueprint,
+    ) {
+        if let Some(level) = &self.cur_level {
+            level.despawn(commands);
+        }
+
+        self.cur_level = Some(blueprint.spawn(commands, handles, level_material_handles));
+    }
 }

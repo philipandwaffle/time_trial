@@ -10,6 +10,7 @@ pub const PROP_Z_OFFSET: f32 = 0.1;
 pub const INPUT_Z_OFFSET: f32 = 0.0;
 pub const OUTPUT_Z_OFFSET: f32 = 0.0;
 
+pub const LEVELS_DIR: &str = "level";
 pub const WALLS_FILE: &str = "walls.json";
 pub const PROPS_FILE: &str = "props.json";
 pub const INPUTS_FILE: &str = "inputs.json";
