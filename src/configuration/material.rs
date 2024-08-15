@@ -5,11 +5,7 @@ use super::ConfigTag;
 
 #[derive(Resource, Serialize, Deserialize)]
 pub struct MaterialConfig {
-    pub wall: HSL,
     pub player: HSL,
-    pub press_button: HSL,
-    pub toggle_button: HSL,
-    pub door: HSL,
 }
 impl ConfigTag for MaterialConfig {}
 
