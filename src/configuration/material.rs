@@ -20,6 +20,9 @@ pub struct HSL {
     pub l: f32,
 }
 impl HSL {
+    pub fn new(h: f32, s: f32, l: f32) -> Self {
+        return Self { h, s, l };
+    }
     pub fn to_color_mat(&self) -> ColorMaterial {
         return ColorMaterial::from(Color::hsl(self.h, self.s, self.l));
     }

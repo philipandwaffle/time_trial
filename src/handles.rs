@@ -18,6 +18,8 @@ pub struct Handles {
     pub toggle_button_material: Handle<ColorMaterial>,
     pub door_mesh: Mesh2dHandle,
     pub door_material: Handle<ColorMaterial>,
+    pub square_mesh: Mesh2dHandle,
+    pub circle_mesh: Mesh2dHandle,
 }
 
 pub struct HandlesPlugin;
@@ -48,5 +50,7 @@ pub fn setup_handles(
             .add(Rectangle::new(mesh_config.door[0], mesh_config.door[1]))
             .into(),
         door_material: materials.add(materials_config.door.to_color_mat()),
+        square_mesh: meshes.add(Rectangle::new(1.0, 1.0)).into(),
+        circle_mesh: meshes.add(Circle::new(0.5)).into(),
     });
 }

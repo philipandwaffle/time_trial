@@ -1,9 +1,13 @@
 use bevy::{
     app::{Plugin, Update},
+    asset::Handle,
     prelude::{Component, Entity, Query, Res},
+    sprite::ColorMaterial,
 };
 use bevy_rapier2d::plugin::RapierContext;
 use serde::{Deserialize, Serialize};
+
+use super::blueprints::level::LevelMaterialHandles;
 
 pub struct InputPlugin;
 impl Plugin for InputPlugin {
@@ -35,8 +39,20 @@ pub enum ButtonType {
 
 #[derive(Component, Deserialize, Serialize)]
 pub struct ToggleButton {
-    pub state: bool,
+    state: bool,
     prev_state: bool,
+    on_key: String,
+    off_key: String,
+}
+impl ToggleButton {
+    pub fn new(on_key: &str, off_key: &str) -> Self {
+        return Self {
+            state: false,
+            prev_state: false,
+            on_key: on_key.to_string(),
+            off_key: off_key.to_string(),
+        };
+    }
 }
 impl Input for ToggleButton {
     fn append_state(&self, vec: &mut Vec<bool>) {
@@ -46,23 +62,20 @@ impl Input for ToggleButton {
         return 1;
     }
 }
-impl Default for ToggleButton {
-    fn default() -> Self {
-        Self {
-            state: false,
-            prev_state: false,
-        }
-    }
-}
 pub fn update_toggle_button(
     rapier_context: Res<RapierContext>,
-    mut buttons: Query<(Entity, &mut ToggleButton)>,
+    mut buttons: Query<(Entity, &mut ToggleButton, &mut Handle<ColorMaterial>)>,
+    level_material_handles: Res<LevelMaterialHandles>,
 ) {
-    for (ent, mut button) in buttons.iter_mut() {
+    for (ent, mut button, mut color) in buttons.iter_mut() {
         let cur_collider_state = rapier_context.intersection_pairs_with(ent).count() > 0;
         if button.prev_state != cur_collider_state {
             if !button.prev_state && cur_collider_state {
                 button.state = !button.state;
+                match button.state {
+                    true => *color = level_material_handles.0[&button.on_key].clone(),
+                    false => *color = level_material_handles.0[&button.off_key].clone(),
+                }
             }
             button.prev_state = cur_collider_state;
         }
@@ -71,7 +84,18 @@ pub fn update_toggle_button(
 
 #[derive(Component, Deserialize, Serialize)]
 pub struct PressButton {
-    pub state: bool,
+    state: bool,
+    on_key: String,
+    off_key: String,
+}
+impl PressButton {
+    pub fn new(on_key: &str, off_key: &str) -> Self {
+        return Self {
+            state: false,
+            on_key: on_key.to_string(),
+            off_key: off_key.to_string(),
+        };
+    }
 }
 impl Input for PressButton {
     fn append_state(&self, vec: &mut Vec<bool>) {
@@ -81,16 +105,20 @@ impl Input for PressButton {
         return 1;
     }
 }
-impl Default for PressButton {
-    fn default() -> Self {
-        Self { state: false }
-    }
-}
+
 pub fn update_press_button(
     rapier_context: Res<RapierContext>,
-    mut buttons: Query<(Entity, &mut PressButton)>,
+    mut buttons: Query<(Entity, &mut PressButton, &mut Handle<ColorMaterial>)>,
+    level_material_handles: Res<LevelMaterialHandles>,
 ) {
-    for (ent, mut button) in buttons.iter_mut() {
-        button.state = rapier_context.intersection_pairs_with(ent).count() > 0;
+    for (ent, mut button, mut color) in buttons.iter_mut() {
+        let new_state = rapier_context.intersection_pairs_with(ent).count() > 0;
+        if button.state != new_state {
+            button.state = new_state;
+            match button.state {
+                true => *color = level_material_handles.0[&button.on_key].clone(),
+                false => *color = level_material_handles.0[&button.off_key].clone(),
+            }
+        }
     }
 }

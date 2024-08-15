@@ -1,6 +1,6 @@
 use bevy::{
     app::{Plugin, Update},
-    prelude::{Changed, Commands, Component, Entity, Query, ViewVisibility, Visibility},
+    prelude::{Changed, Commands, Component, Entity, Query, Visibility},
 };
 use bevy_rapier2d::prelude::Sensor;
 use bevy_trait_query::RegisterExt;

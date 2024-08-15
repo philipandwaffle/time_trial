@@ -1,10 +1,14 @@
+use std::collections::HashMap;
+
 use bevy::{
+    asset::Handle,
     math::Vec2,
     prelude::{Commands, Entity},
+    sprite::{ColorMaterial, Mesh2dHandle},
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{handles::Handles, level::bundles::output::DoorBundle};
+use crate::level::bundles::output::DoorBundle;
 
 #[derive(Deserialize, Serialize)]
 pub enum OutputBluePrint {
@@ -16,16 +20,27 @@ pub struct DoorBlueprint {
     pos: Vec2,
     z_rot: f32,
     shape: Vec2,
+    material_key: String,
 }
 impl DoorBlueprint {
-    pub fn new(pos: Vec2, z_rot: f32, shape: Vec2) -> Self {
-        return Self { pos, z_rot, shape };
+    pub fn new(pos: Vec2, z_rot: f32, shape: Vec2, material_key: &str) -> Self {
+        return Self {
+            pos,
+            z_rot,
+            shape,
+            material_key: material_key.to_string(),
+        };
     }
 
-    pub fn spawn(self, commands: &mut Commands, handles: &Handles) -> Entity {
+    pub fn spawn(
+        self,
+        commands: &mut Commands,
+        materials: &HashMap<String, Handle<ColorMaterial>>,
+        mesh: &Mesh2dHandle,
+    ) -> Entity {
         return DoorBundle::new(
-            &handles.door_material,
-            &handles.door_mesh,
+            &materials[&self.material_key],
+            mesh,
             self.pos,
             self.z_rot,
             self.shape,

@@ -6,7 +6,10 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{Collider, Sensor};
 
-use crate::{consts::INPUT_Z_OFFSET, level::input::{PressButton, ToggleButton}};
+use crate::{
+    consts::INPUT_Z_OFFSET,
+    level::input::{PressButton, ToggleButton},
+};
 
 #[derive(Bundle)]
 pub struct ToggleButtonBundle {
@@ -19,10 +22,12 @@ impl ToggleButtonBundle {
         mesh: &Mesh2dHandle,
         radius: f32,
         pos: Vec2,
+        on_key: &str,
+        off_key: &str,
     ) -> Self {
         return Self {
             button_bundle: ButtonBundle::new(material, mesh, radius, pos),
-            toggle_button: ToggleButton::default(),
+            toggle_button: ToggleButton::new(on_key, off_key),
         };
     }
 
@@ -42,10 +47,12 @@ impl PressButtonBundle {
         mesh: &Mesh2dHandle,
         radius: f32,
         pos: Vec2,
+        on_key: &str,
+        off_key: &str,
     ) -> Self {
         return Self {
             button_bundle: ButtonBundle::new(material, mesh, radius, pos),
-            press_button: PressButton::default(),
+            press_button: PressButton::new(on_key, off_key),
         };
     }
 

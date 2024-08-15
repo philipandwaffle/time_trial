@@ -2,8 +2,10 @@ use std::collections::HashMap;
 
 use bevy::{
     app::{Plugin, Startup, Update},
+    asset::Assets,
     math::vec2,
     prelude::{Commands, Query, Res, ResMut, Resource},
+    sprite::ColorMaterial,
 };
 use bevy_trait_query::One;
 
@@ -15,7 +17,7 @@ use crate::{
 use super::{
     blueprints::{
         input::{ButtonBlueprint, InputBlueprint},
-        level::LevelBlueprint,
+        level::{LevelBlueprint, LevelMaterialHandles},
         output::{DoorBlueprint, OutputBluePrint},
         props::{BoxBlueprint, PropBlueprint},
         wall::WallBluePrint,
@@ -31,28 +33,33 @@ pub struct LevelManagerPlugin;
 impl LevelManagerPlugin {
     pub fn gen_blueprint() -> LevelBlueprint {
         let walls = vec![
-            WallBluePrint::new(vec2(0.0, -50.0), 0.0, vec2(500.0, 5.0)),
-            WallBluePrint::new(vec2(0.0, 50.0), 0.0, vec2(500.0, 5.0)),
-            WallBluePrint::new(vec2(250.0, 0.0), 0.0, vec2(5.0, 100.0)),
-            WallBluePrint::new(vec2(-250.0, 0.0), 0.0, vec2(5.0, 100.0)),
+            WallBluePrint::new(vec2(0.0, -50.0), 0.0, vec2(500.0, 5.0), "wall"),
+            WallBluePrint::new(vec2(0.0, 50.0), 0.0, vec2(500.0, 5.0), "wall"),
+            WallBluePrint::new(vec2(250.0, 0.0), 0.0, vec2(5.0, 100.0), "wall"),
+            WallBluePrint::new(vec2(-250.0, 0.0), 0.0, vec2(5.0, 100.0), "wall"),
         ];
 
         let props = vec![PropBlueprint::BoxBlueprint(BoxBlueprint::new(
             vec2(-100.0, 0.0),
             0.0,
-            vec2(5.0, 5.0),
+            vec2(20.0, 20.0),
+            "box",
         ))];
 
         let inputs = vec![
             InputBlueprint::Button(ButtonBlueprint::new(
                 vec2(-50.0, -30.0),
-                5.0,
+                10.0,
                 ButtonType::PressButton,
+                "green_on",
+                "green_off",
             )),
             InputBlueprint::Button(ButtonBlueprint::new(
                 vec2(-50.0, 30.0),
-                5.0,
+                10.0,
                 ButtonType::ToggleButton,
+                "yellow_on",
+                "yellow_off",
             )),
         ];
 
@@ -60,6 +67,7 @@ impl LevelManagerPlugin {
             vec2(50.0, 0.0),
             0.0,
             vec2(5.0, 100.0),
+            "door",
         ))];
 
         let logic_tree = LogicTree::new(
@@ -67,7 +75,14 @@ impl LevelManagerPlugin {
             vec![vec![0, 1], vec![0]],
         );
 
-        let level_materials = HashMap::<String, HSL>::new();
+        let mut level_materials = HashMap::<String, HSL>::new();
+        level_materials.insert("wall".to_string(), HSL::new(0.0, 0.0, 0.0));
+        level_materials.insert("box".to_string(), HSL::new(230.0, 0.5, 0.5));
+        level_materials.insert("green_on".to_string(), HSL::new(110.0, 0.5, 0.5));
+        level_materials.insert("green_off".to_string(), HSL::new(110.0, 0.5, 0.3));
+        level_materials.insert("yellow_on".to_string(), HSL::new(67.0, 0.5, 0.5));
+        level_materials.insert("yellow_off".to_string(), HSL::new(67.0, 0.5, 0.3));
+        level_materials.insert("door".to_string(), HSL::new(0.0, 0.0, 0.5));
 
         let bp = LevelBlueprint::new(walls, props, inputs, outputs, logic_tree, level_materials);
 
@@ -79,6 +94,7 @@ impl Plugin for LevelManagerPlugin {
         app.add_plugins((InputPlugin, OutputPlugin));
 
         app.insert_resource(LevelManager { cur_level: None })
+            .insert_resource(LevelMaterialHandles::default())
             .add_systems(Startup, load_level)
             .add_systems(Update, update_level);
     }
@@ -89,18 +105,25 @@ pub fn load_level(
     handles: Res<Handles>,
     level_config: Res<LevelConfig>,
     mut level_manager: ResMut<LevelManager>,
+    mut level_material_handles: ResMut<LevelMaterialHandles>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    if level_config.gen_on_start {
+    let blueprint = if level_config.gen_on_start {
         let blueprint = LevelManagerPlugin::gen_blueprint();
         if level_config.save_on_start {
             blueprint.save_cfg(&format!("{}/{}", level_config.dir, level_config.cur_level));
         }
 
-        level_manager.cur_level = Some(blueprint.spawn(&mut commands, &handles));
+        blueprint.setup_level_material_handles(&mut level_material_handles, &mut materials);
+        blueprint
     } else {
-        level_manager.cur_level =
-            Some(LevelBlueprint::load_cfg(&level_config.dir).spawn(&mut commands, &handles));
-    }
+        let blueprint = LevelBlueprint::load_cfg(&level_config.dir);
+        blueprint.setup_level_material_handles(&mut level_material_handles, &mut materials);
+        blueprint
+    };
+
+    level_manager.cur_level =
+        Some(blueprint.spawn(&mut commands, &handles, &level_material_handles));
 }
 
 pub fn update_level(

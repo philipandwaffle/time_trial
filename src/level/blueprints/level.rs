@@ -1,8 +1,10 @@
 use std::{collections::HashMap, fs::create_dir, path::Path};
 
 use bevy::{
+    asset::{Assets, Handle},
     log::error,
-    prelude::{BuildChildren, Commands},
+    prelude::{BuildChildren, Commands, Resource},
+    sprite::ColorMaterial,
 };
 use serde::{Deserialize, Serialize};
 
@@ -50,6 +52,8 @@ impl Config for LevelBlueprint {
         self.outputs.save_cfg(&format!("{}/{}", path, OUTPUTS_FILE));
         self.logic_tree
             .save_cfg(&format!("{}/{}", path, LOGIC_TREE_FILE));
+        self.level_materials
+            .save_cfg(&format!("{}/{}", path, MATERIALS_FILE));
     }
 }
 impl LevelBlueprint {
@@ -71,17 +75,23 @@ impl LevelBlueprint {
         };
     }
 
-    pub fn spawn(self, commands: &mut Commands, handles: &Handles) -> Level {
+    pub fn spawn(
+        self,
+        commands: &mut Commands,
+        handles: &Handles,
+        level_material_handles: &LevelMaterialHandles,
+    ) -> Level {
+        let materials = &level_material_handles.0;
         let root = LevelRootBundle::new().spawn(commands);
 
         for wall in self.walls.0 {
-            let wall_ent = wall.spawn(&handles.wall_material, &handles.wall_mesh, commands);
+            let wall_ent = wall.spawn(materials, &handles.square_mesh, commands);
             commands.get_entity(root).unwrap().add_child(wall_ent);
         }
         for prop in self.props.0 {
             let prop_ent = match prop {
                 PropBlueprint::BoxBlueprint(box_blueprint) => {
-                    box_blueprint.spawn(commands, handles)
+                    box_blueprint.spawn(commands, materials, &handles.square_mesh)
                 }
             };
             commands.get_entity(root).unwrap().add_child(prop_ent);
@@ -91,7 +101,7 @@ impl LevelBlueprint {
         for input in self.inputs.0 {
             let input_ent = match input {
                 InputBlueprint::Button(button_blueprint) => {
-                    button_blueprint.spawn(commands, handles)
+                    button_blueprint.spawn(commands, materials, &handles.circle_mesh)
                 }
             };
             commands.get_entity(root).unwrap().add_child(input_ent);
@@ -101,13 +111,27 @@ impl LevelBlueprint {
         let mut output_ents = Vec::with_capacity(self.outputs.0.len());
         for output in self.outputs.0 {
             let output_ent = match output {
-                OutputBluePrint::Door(door) => door.spawn(commands, handles),
+                OutputBluePrint::Door(door) => {
+                    door.spawn(commands, materials, &handles.square_mesh)
+                }
             };
             commands.get_entity(root).unwrap().add_child(output_ent);
             output_ents.push(output_ent)
         }
 
         return Level::new(root, self.logic_tree, input_ents, output_ents);
+    }
+
+    pub fn setup_level_material_handles(
+        &self,
+        level_material_handles: &mut LevelMaterialHandles,
+        materials: &mut Assets<ColorMaterial>,
+    ) {
+        level_material_handles.0.clear();
+        for (key, color) in self.level_materials.0.iter() {
+            let color_handle = materials.add(color.to_color_mat());
+            level_material_handles.0.insert(key.clone(), color_handle);
+        }
     }
 }
 
@@ -132,3 +156,6 @@ impl ConfigTag for LogicTree {}
 #[derive(Deserialize, Serialize)]
 pub struct LevelMaterials(HashMap<String, HSL>);
 impl ConfigTag for LevelMaterials {}
+
+#[derive(Resource, Default)]
+pub struct LevelMaterialHandles(pub HashMap<String, Handle<ColorMaterial>>);
