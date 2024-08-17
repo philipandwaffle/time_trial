@@ -1,15 +1,18 @@
 use std::collections::HashMap;
 
 use bevy::{
-    app::{Plugin, PostUpdate},
+    app::{Plugin, PostUpdate, Startup},
     asset::Assets,
     math::vec2,
-    prelude::{Commands, Query, ResMut, Resource},
+    prelude::{Commands, Query, Res, ResMut, Resource},
     sprite::ColorMaterial,
 };
 use bevy_trait_query::One;
 
-use crate::{configuration::material::HSL, handles::Handles};
+use crate::{
+    configuration::{level::LevelConfig, material::HSL, Config},
+    handles::Handles,
+};
 
 use super::{
     blueprints::{
@@ -94,36 +97,19 @@ impl Plugin for LevelManagerPlugin {
 
         app.insert_resource(LevelManager { cur_level: None })
             .insert_resource(LevelMaterialHandles::default())
-            // .add_systems(Startup, setup_level)
+            .add_systems(Startup, gen_level)
             .add_systems(PostUpdate, update_level_state);
     }
 }
 
-// fn setup_level(
-//     mut commands: Commands,
-//     handles: Res<Handles>,
-//     level_config: Res<LevelConfig>,
-//     mut level_manager: ResMut<LevelManager>,
-//     mut level_material_handles: ResMut<LevelMaterialHandles>,
-//     mut materials: ResMut<Assets<ColorMaterial>>,
-// ) {
-//     let blueprint = if level_config.gen_on_start {
-//         let blueprint = LevelManagerPlugin::gen_blueprint();
-//         if level_config.save_on_start {
-//             blueprint.save_cfg(&format!("{}/{}", level_config.dir, level_config.cur_level));
-//         }
-
-//         blueprint.setup_level_material_handles(&mut level_material_handles, &mut materials);
-//         blueprint
-//     } else {
-//         let blueprint = LevelBlueprint::load_cfg(&level_config.dir);
-//         blueprint.setup_level_material_handles(&mut level_material_handles, &mut materials);
-//         blueprint
-//     };
-
-//     level_manager.cur_level =
-//         Some(blueprint.spawn(&mut commands, &handles, &level_material_handles));
-// }
+fn gen_level(level_config: Res<LevelConfig>) {
+    if level_config.gen_on_start {
+        let blueprint = LevelManagerPlugin::gen_blueprint();
+        if level_config.save_on_start {
+            blueprint.save_cfg(&format!("{}/{}", level_config.dir, level_config.cur_level));
+        }
+    }
+}
 
 fn update_level_state(
     mut level_manager: ResMut<LevelManager>,

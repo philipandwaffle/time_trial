@@ -1,6 +1,6 @@
 {
     "dir": "levels",
-    "cur_level": "00",
-    "gen_on_start": false,
-    "save_on_start": false
+    "cur_level": "0",
+    "gen_on_start": true,
+    "save_on_start": true
 }
