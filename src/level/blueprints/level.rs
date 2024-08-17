@@ -79,8 +79,10 @@ impl LevelBlueprint {
         self,
         commands: &mut Commands,
         handles: &Handles,
-        level_material_handles: &LevelMaterialHandles,
+        level_material_handles: &mut LevelMaterialHandles,
+        materials: &mut Assets<ColorMaterial>,
     ) -> Level {
+        self.setup_level_material_handles(level_material_handles, materials);
         let materials = &level_material_handles.0;
         let root = LevelRootBundle::new().spawn(commands);
 

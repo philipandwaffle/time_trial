@@ -1,18 +1,15 @@
 use std::collections::HashMap;
 
 use bevy::{
-    app::{Plugin, Startup, Update},
+    app::{Plugin, PostUpdate},
     asset::Assets,
     math::vec2,
-    prelude::{Commands, Query, Res, ResMut, Resource},
+    prelude::{Commands, Query, ResMut, Resource},
     sprite::ColorMaterial,
 };
 use bevy_trait_query::One;
 
-use crate::{
-    configuration::{level::LevelConfig, material::HSL, Config},
-    handles::Handles,
-};
+use crate::{configuration::material::HSL, handles::Handles};
 
 use super::{
     blueprints::{
@@ -25,8 +22,10 @@ use super::{
     gate::*,
     input::{ButtonType, Input, InputPlugin},
     level::Level,
+    level_pack::LevelPackPlugin,
     logic_tree::*,
     output::{Output, OutputPlugin},
+    time_shift::TimeShiftPlugin,
 };
 
 pub struct LevelManagerPlugin;
@@ -91,40 +90,40 @@ impl LevelManagerPlugin {
 }
 impl Plugin for LevelManagerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_plugins((InputPlugin, OutputPlugin));
+        app.add_plugins((InputPlugin, OutputPlugin, LevelPackPlugin, TimeShiftPlugin));
 
         app.insert_resource(LevelManager { cur_level: None })
             .insert_resource(LevelMaterialHandles::default())
-            .add_systems(Startup, setup_level)
-            .add_systems(Update, update_level_state);
+            // .add_systems(Startup, setup_level)
+            .add_systems(PostUpdate, update_level_state);
     }
 }
 
-fn setup_level(
-    mut commands: Commands,
-    handles: Res<Handles>,
-    level_config: Res<LevelConfig>,
-    mut level_manager: ResMut<LevelManager>,
-    mut level_material_handles: ResMut<LevelMaterialHandles>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    let blueprint = if level_config.gen_on_start {
-        let blueprint = LevelManagerPlugin::gen_blueprint();
-        if level_config.save_on_start {
-            blueprint.save_cfg(&format!("{}/{}", level_config.dir, level_config.cur_level));
-        }
+// fn setup_level(
+//     mut commands: Commands,
+//     handles: Res<Handles>,
+//     level_config: Res<LevelConfig>,
+//     mut level_manager: ResMut<LevelManager>,
+//     mut level_material_handles: ResMut<LevelMaterialHandles>,
+//     mut materials: ResMut<Assets<ColorMaterial>>,
+// ) {
+//     let blueprint = if level_config.gen_on_start {
+//         let blueprint = LevelManagerPlugin::gen_blueprint();
+//         if level_config.save_on_start {
+//             blueprint.save_cfg(&format!("{}/{}", level_config.dir, level_config.cur_level));
+//         }
 
-        blueprint.setup_level_material_handles(&mut level_material_handles, &mut materials);
-        blueprint
-    } else {
-        let blueprint = LevelBlueprint::load_cfg(&level_config.dir);
-        blueprint.setup_level_material_handles(&mut level_material_handles, &mut materials);
-        blueprint
-    };
+//         blueprint.setup_level_material_handles(&mut level_material_handles, &mut materials);
+//         blueprint
+//     } else {
+//         let blueprint = LevelBlueprint::load_cfg(&level_config.dir);
+//         blueprint.setup_level_material_handles(&mut level_material_handles, &mut materials);
+//         blueprint
+//     };
 
-    level_manager.cur_level =
-        Some(blueprint.spawn(&mut commands, &handles, &level_material_handles));
-}
+//     level_manager.cur_level =
+//         Some(blueprint.spawn(&mut commands, &handles, &level_material_handles));
+// }
 
 fn update_level_state(
     mut level_manager: ResMut<LevelManager>,
@@ -143,15 +142,17 @@ pub struct LevelManager {
 impl LevelManager {
     pub fn change_level(
         &mut self,
+        blueprint: LevelBlueprint,
         commands: &mut Commands,
         handles: &Handles,
-        level_material_handles: &LevelMaterialHandles,
-        blueprint: LevelBlueprint,
+        level_material_handles: &mut LevelMaterialHandles,
+        materials: &mut Assets<ColorMaterial>,
     ) {
         if let Some(level) = &self.cur_level {
             level.despawn(commands);
         }
 
-        self.cur_level = Some(blueprint.spawn(commands, handles, level_material_handles));
+        self.cur_level =
+            Some(blueprint.spawn(commands, handles, level_material_handles, materials));
     }
 }

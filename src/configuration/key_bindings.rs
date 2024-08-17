@@ -11,6 +11,7 @@ pub struct KeyBinds {
     pub left: KeyBind,
     pub down: KeyBind,
     pub right: KeyBind,
+    pub time_shift: KeyBind,
     pub next_level: KeyBind,
     pub prev_level: KeyBind,
 }
@@ -28,6 +29,7 @@ impl FromStr for KeyBind {
             "KeyA" => KeyCode::KeyA,
             "KeyS" => KeyCode::KeyS,
             "KeyD" => KeyCode::KeyD,
+            "KeyE" => KeyCode::KeyE,
             "ArrowDown" => KeyCode::ArrowDown,
             "ArrowUp" => KeyCode::ArrowUp,
             "KeyP" => KeyCode::KeyP,
@@ -47,6 +49,7 @@ impl Serialize for KeyBind {
             KeyCode::KeyA => serializer.serialize_str("KeyA"),
             KeyCode::KeyS => serializer.serialize_str("KeyS"),
             KeyCode::KeyD => serializer.serialize_str("KeyD"),
+            KeyCode::KeyE => serializer.serialize_str("KeyE"),
             KeyCode::ArrowDown => serializer.serialize_str("ArrowDown"),
             KeyCode::ArrowUp => serializer.serialize_str("ArrowUp"),
             KeyCode::KeyP => serializer.serialize_str("KeyP"),

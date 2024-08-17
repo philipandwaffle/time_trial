@@ -6,12 +6,13 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{Collider, Damping, LockedAxes, RigidBody, Velocity};
 
-use crate::consts::PROP_Z_OFFSET;
+use crate::{consts::PROP_Z_OFFSET, level::time_shift::TimeShift};
 
 #[derive(Bundle)]
 pub struct BoxBundle {
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     physics_prop_bundle: PhysicsPropBundle,
+    time_shift: TimeShift,
 }
 impl BoxBundle {
     pub fn new(
@@ -39,6 +40,7 @@ impl BoxBundle {
                 linear_damping,
                 angular_damping,
             ),
+            time_shift: TimeShift::new(pos),
         };
     }
     pub fn spawn(self, commands: &mut Commands) -> Entity {
