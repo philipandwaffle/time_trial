@@ -1,6 +1,12 @@
-use bevy::prelude::{
-    default, Bundle, Camera2dBundle, Commands, Component, Entity, OrthographicProjection,
+use bevy::{
+    math::vec3,
+    prelude::{
+        default, Bundle, Camera2dBundle, Commands, Component, Entity, OrthographicProjection,
+        Transform,
+    },
 };
+
+use crate::consts::CAMERA_Z_OFFSET;
 
 #[derive(Component)]
 pub struct PlayerCam;
@@ -14,6 +20,7 @@ impl PlayerCamBundle {
     pub fn new(scale: f32) -> Self {
         return Self {
             camera_2d_bundle: Camera2dBundle {
+                transform: Transform::from_translation(vec3(0.0, 0.0, CAMERA_Z_OFFSET)),
                 projection: OrthographicProjection {
                     scale: scale,
                     ..default()

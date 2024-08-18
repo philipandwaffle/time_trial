@@ -49,20 +49,20 @@ impl LevelManagerPlugin {
         ))];
 
         let inputs = vec![
-            InputBlueprint::Button(ButtonBlueprint::new(
+            InputBlueprint::Button(ButtonBlueprint::new((
                 vec2(-50.0, -30.0),
                 10.0,
                 ButtonType::PressButton,
                 "green_on",
                 "green_off",
-            )),
-            InputBlueprint::Button(ButtonBlueprint::new(
+            ))),
+            InputBlueprint::Button(ButtonBlueprint::new((
                 vec2(-50.0, 30.0),
                 10.0,
                 ButtonType::ToggleButton,
                 "yellow_on",
                 "yellow_off",
-            )),
+            ))),
         ];
 
         let outputs = vec![OutputBluePrint::Door(DoorBlueprint::new(
