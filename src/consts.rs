@@ -16,6 +16,7 @@ pub const INPUT_Z_OFFSET: f32 = 0.0;
 pub const OUTPUT_Z_OFFSET: f32 = 0.0;
 
 pub const WALLS_FILE: &str = "walls.json";
+pub const PLAYER_FILE: &str = "player.json";
 pub const PROPS_FILE: &str = "props.json";
 pub const INPUTS_FILE: &str = "inputs.json";
 pub const OUTPUTS_FILE: &str = "outputs.json";

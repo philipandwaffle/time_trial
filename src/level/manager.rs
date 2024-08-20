@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use bevy::{
     app::{Plugin, PostUpdate, Startup},
     asset::Assets,
-    math::vec2,
+    math::{vec2, Vec3},
     prelude::{Commands, Query, Res, ResMut, Resource},
     sprite::ColorMaterial,
 };
@@ -24,6 +24,7 @@ use super::{
         wall::WallBluePrint,
     },
     gate::*,
+    goal::GoalPlugin,
     input::{ButtonType, Input, InputPlugin},
     level::Level,
     level_pack::LevelPackPlugin,
@@ -35,6 +36,8 @@ use super::{
 pub struct LevelManagerPlugin;
 impl LevelManagerPlugin {
     pub fn gen_blueprint() -> LevelBlueprint {
+        let player = vec2(0.0, 0.0);
+
         let walls = vec![
             WallBluePrint::new(vec2(0.0, -50.0), 0.0, vec2(500.0, 5.0), "wall"),
             WallBluePrint::new(vec2(0.0, 50.0), 0.0, vec2(500.0, 5.0), "wall"),
@@ -91,6 +94,7 @@ impl LevelManagerPlugin {
         level_materials.insert("door".to_string(), HSL::new(0.0, 0.0, 0.5));
 
         let bp = LevelBlueprint::new(
+            player,
             walls,
             props,
             inputs,
@@ -105,7 +109,13 @@ impl LevelManagerPlugin {
 }
 impl Plugin for LevelManagerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_plugins((InputPlugin, OutputPlugin, LevelPackPlugin, TimeShiftPlugin));
+        app.add_plugins((
+            InputPlugin,
+            OutputPlugin,
+            GoalPlugin,
+            LevelPackPlugin,
+            TimeShiftPlugin,
+        ));
 
         app.insert_resource(LevelManager { cur_level: None })
             .insert_resource(LevelMaterialHandles::default())
@@ -141,6 +151,7 @@ impl LevelManager {
     pub fn change_level(
         &mut self,
         blueprint: LevelBlueprint,
+        player_pos: &mut Vec3,
         commands: &mut Commands,
         handles: &Handles,
         level_material_handles: &mut LevelMaterialHandles,
@@ -150,7 +161,12 @@ impl LevelManager {
             level.despawn(commands);
         }
 
-        self.cur_level =
-            Some(blueprint.spawn(commands, handles, level_material_handles, materials));
+        self.cur_level = Some(blueprint.spawn(
+            commands,
+            player_pos,
+            handles,
+            level_material_handles,
+            materials,
+        ));
     }
 }

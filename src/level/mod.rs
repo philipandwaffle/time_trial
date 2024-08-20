@@ -1,6 +1,7 @@
 mod blueprints;
 mod bundles;
 mod gate;
+mod goal;
 mod input;
 mod level;
 pub mod level_pack;

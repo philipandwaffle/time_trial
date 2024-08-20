@@ -1,18 +1,24 @@
 use bevy::{
     asset::Handle,
     math::{Quat, Vec2},
-    prelude::{default, Bundle, Commands, Entity, Transform},
+    prelude::{default, Bundle, Commands, Component, Entity, Transform},
     sprite::{ColorMaterial, MaterialMesh2dBundle, Mesh2dHandle},
 };
 use bevy_rapier2d::prelude::{Collider, Sensor};
 
 use crate::consts::GOAL_Z_OFFSET;
 
+#[derive(Component)]
+pub struct Goal {
+    pub triggered: bool,
+}
+
 #[derive(Bundle)]
 pub struct GoalBundle {
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     collider: Collider,
     sensor: Sensor,
+    goal: Goal,
 }
 impl GoalBundle {
     pub fn new(
@@ -35,6 +41,7 @@ impl GoalBundle {
             },
             collider: Collider::cuboid(0.5, 0.5),
             sensor: Sensor,
+            goal: Goal { triggered: false },
         };
     }
     pub fn spawn(self, commands: &mut Commands) -> Entity {

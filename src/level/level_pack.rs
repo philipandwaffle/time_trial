@@ -7,13 +7,19 @@ use bevy::{
     app::{Plugin, PreStartup, Update},
     asset::Assets,
     input::ButtonInput,
-    prelude::{Commands, Event, EventReader, EventWriter, KeyCode, Res, ResMut, Resource},
+    math::Vec2,
+    prelude::{
+        Commands, Event, EventReader, EventWriter, KeyCode, Query, Res, ResMut, Resource,
+        Transform, With,
+    },
     sprite::ColorMaterial,
 };
+use bevy_rapier2d::prelude::Velocity;
 
 use crate::{
     configuration::{key_bindings::KeyBinds, level::LevelConfig, Config},
     handles::Handles,
+    player::player_bundle::Player,
 };
 
 use super::{
@@ -91,6 +97,7 @@ impl ChangeLevelEvent {
 fn read_change_level_event(
     mut commands: Commands,
     mut ev_change_level: EventReader<ChangeLevelEvent>,
+    mut player: Query<(&mut Transform, &mut Velocity), With<Player>>,
     mut time_state: ResMut<TimeState>,
     mut level_manager: ResMut<LevelManager>,
     mut level_pack: ResMut<LevelPack>,
@@ -100,8 +107,12 @@ fn read_change_level_event(
 ) {
     for ev in ev_change_level.read() {
         let blueprint = level_pack.change_level(ev.delta);
+        let (mut transform, mut vel) = player.single_mut();
+        vel.linvel = Vec2::ZERO;
+
         level_manager.change_level(
             blueprint,
+            &mut transform.translation,
             &mut commands,
             &handles,
             &mut level_material_handles,
