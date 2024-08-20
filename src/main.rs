@@ -1,6 +1,5 @@
 use crate::player::player_bundle::PlayerPlugin;
 use bevy::app::App;
-use bevy::math::IVec2;
 use bevy::prelude::{default, ImagePlugin, PluginGroup};
 use bevy::window::{Window, WindowMode, WindowPlugin, WindowPosition};
 use bevy::{log::LogPlugin, DefaultPlugins};
@@ -34,8 +33,6 @@ fn main() {
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
-                    // primary_window: None,
-                    // exit_condition: bevy::window::ExitCondition::DontExit,
                     primary_window: Some(window),
                     ..default()
                 })
