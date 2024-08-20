@@ -5,7 +5,9 @@ use bevy::prelude::{default, ImagePlugin, PluginGroup};
 use bevy::window::{Window, WindowMode, WindowPlugin, WindowPosition};
 use bevy::{log::LogPlugin, DefaultPlugins};
 use bevy_rapier2d::prelude::*;
-use configuration::ConfigPlugin;
+use configuration::display::DisplayConfig;
+use configuration::{Config, ConfigPlugin};
+use consts::DISPLAY_CFG_PATH;
 use handles::HandlesPlugin;
 use level::manager::LevelManagerPlugin;
 
@@ -16,15 +18,17 @@ mod level;
 mod player;
 
 fn main() {
+    let display_config = DisplayConfig::load_cfg(DISPLAY_CFG_PATH);
     let window = Window {
         title: "time_trial".into(),
-        resolution: (2560.0 * 0.5, 1440.0).into(),
+        resolution: (display_config.resolution.x, display_config.resolution.y).into(),
         mode: WindowMode::Windowed,
-        position: WindowPosition::At(IVec2::new(0, 0)),
+        position: WindowPosition::At(display_config.pos),
         // Tells wasm not to override default event handling, like F5, Ctrl+R etc.
-        prevent_default_event_handling: false,
+        // prevent_default_event_handling: false,
         ..default()
     };
+
     App::new()
         .insert_resource(RapierConfiguration::new(0.0))
         .add_plugins(
@@ -48,7 +52,7 @@ fn main() {
             HandlesPlugin,
             LevelManagerPlugin,
             PlayerPlugin,
-            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),            
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
         ))
         .run();
 }

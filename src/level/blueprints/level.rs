@@ -10,13 +10,17 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     configuration::{material::HSL, Config, ConfigTag},
-    consts::{INPUTS_FILE, LOGIC_TREE_FILE, MATERIALS_FILE, OUTPUTS_FILE, PROPS_FILE, WALLS_FILE},
+    consts::{
+        GOAL_FILE, INPUTS_FILE, LOGIC_TREE_FILE, MATERIALS_FILE, OUTPUTS_FILE, PROPS_FILE,
+        WALLS_FILE,
+    },
     handles::Handles,
     level::{bundles::level::LevelRootBundle, level::Level, logic_tree::LogicTree},
 };
 
 use super::{
-    input::InputBlueprint, output::OutputBluePrint, props::PropBlueprint, wall::WallBluePrint,
+    goal::GoalBlueprint, input::InputBlueprint, output::OutputBluePrint, props::PropBlueprint,
+    wall::WallBluePrint,
 };
 
 pub struct LevelBlueprint {
@@ -24,6 +28,7 @@ pub struct LevelBlueprint {
     props: PropBlueprints,
     inputs: InputBlueprints,
     outputs: OutputBlueprints,
+    goal: GoalBlueprint,
     pub logic_tree: LogicTree,
     level_materials: LevelMaterials,
 }
@@ -34,6 +39,7 @@ impl Config for LevelBlueprint {
             props: PropBlueprints::load_cfg(&format!("{}/{}", path, PROPS_FILE)),
             inputs: InputBlueprints::load_cfg(&format!("{}/{}", path, INPUTS_FILE)),
             outputs: OutputBlueprints::load_cfg(&format!("{}/{}", path, OUTPUTS_FILE)),
+            goal: GoalBlueprint::load_cfg(&format!("{}/{}", path, GOAL_FILE)),
             logic_tree: LogicTree::load_cfg(&format!("{}/{}", path, LOGIC_TREE_FILE)),
             level_materials: LevelMaterials::load_cfg(&format!("{}/{}", path, MATERIALS_FILE)),
         };
@@ -50,6 +56,7 @@ impl Config for LevelBlueprint {
         self.props.save_cfg(&format!("{}/{}", path, PROPS_FILE));
         self.inputs.save_cfg(&format!("{}/{}", path, INPUTS_FILE));
         self.outputs.save_cfg(&format!("{}/{}", path, OUTPUTS_FILE));
+        self.goal.save_cfg(&format!("{}/{}", path, GOAL_FILE));
         self.logic_tree
             .save_cfg(&format!("{}/{}", path, LOGIC_TREE_FILE));
         self.level_materials
@@ -62,6 +69,7 @@ impl LevelBlueprint {
         props: Vec<PropBlueprint>,
         inputs: Vec<InputBlueprint>,
         outputs: Vec<OutputBluePrint>,
+        goal: GoalBlueprint,
         logic_tree: LogicTree,
         level_materials: HashMap<String, HSL>,
     ) -> Self {
@@ -70,6 +78,7 @@ impl LevelBlueprint {
             props: PropBlueprints(props),
             inputs: InputBlueprints(inputs),
             outputs: OutputBlueprints(outputs),
+            goal: goal,
             logic_tree,
             level_materials: LevelMaterials(level_materials),
         };
@@ -120,6 +129,9 @@ impl LevelBlueprint {
             commands.get_entity(root).unwrap().add_child(output_ent);
             output_ents.push(output_ent)
         }
+
+        let goal_ent = self.goal.spawn(commands, materials, &handles.square_mesh);
+        commands.get_entity(root).unwrap().add_child(goal_ent);
 
         return Level::new(root, self.logic_tree, input_ents, output_ents);
     }

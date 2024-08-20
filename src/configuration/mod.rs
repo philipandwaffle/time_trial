@@ -16,6 +16,7 @@ use crate::consts::{
     KEY_BINDINGS_CFG_PATH, LEVEL_CFG_PATH, MATERIAL_CFG_PATH, MESH_CFG_PATH, PLAYER_CFG_PATH,
 };
 
+pub mod display;
 pub mod key_bindings;
 pub mod level;
 pub mod material;

@@ -7,6 +7,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{
     configuration::{key_bindings::KeyBinds, player::PlayerConfig},
+    consts::PLAYER_Z_OFFSET,
     handles::Handles,
 };
 
@@ -38,7 +39,7 @@ impl PlayerBundle {
             material_mesh_bundle: MaterialMesh2dBundle {
                 mesh: mesh.clone(),
                 material: material.clone(),
-                transform: Transform::from_translation(pos.extend(-0.5)),
+                transform: Transform::from_translation(pos.extend(PLAYER_Z_OFFSET)),
                 ..default()
             },
             collider: Collider::ball(collider_radius),

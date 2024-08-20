@@ -16,6 +16,7 @@ use crate::{
 
 use super::{
     blueprints::{
+        goal::GoalBlueprint,
         input::{ButtonBlueprint, InputBlueprint},
         level::{LevelBlueprint, LevelMaterialHandles},
         output::{DoorBlueprint, OutputBluePrint},
@@ -49,20 +50,20 @@ impl LevelManagerPlugin {
         ))];
 
         let inputs = vec![
-            InputBlueprint::Button(ButtonBlueprint::new((
+            InputBlueprint::Button(ButtonBlueprint::new(
                 vec2(-50.0, -30.0),
                 10.0,
                 ButtonType::PressButton,
                 "green_on",
                 "green_off",
-            ))),
-            InputBlueprint::Button(ButtonBlueprint::new((
+            )),
+            InputBlueprint::Button(ButtonBlueprint::new(
                 vec2(-50.0, 30.0),
                 10.0,
                 ButtonType::ToggleButton,
                 "yellow_on",
                 "yellow_off",
-            ))),
+            )),
         ];
 
         let outputs = vec![OutputBluePrint::Door(DoorBlueprint::new(
@@ -72,6 +73,8 @@ impl LevelManagerPlugin {
             "door",
         ))];
 
+        let goal = GoalBlueprint::new(vec2(100.0, 0.0), 0.0, vec2(5.0, 20.0), "goal");
+
         let logic_tree = LogicTree::new(
             vec![vec![GateTypes::OrGate(OrGate::default())]],
             vec![vec![0, 1], vec![0]],
@@ -79,6 +82,7 @@ impl LevelManagerPlugin {
 
         let mut level_materials = HashMap::<String, HSL>::new();
         level_materials.insert("wall".to_string(), HSL::new(0.0, 0.0, 0.0));
+        level_materials.insert("goal".to_string(), HSL::new(0.0, 0.0, 0.25));
         level_materials.insert("box".to_string(), HSL::new(230.0, 0.5, 0.5));
         level_materials.insert("green_on".to_string(), HSL::new(110.0, 0.5, 0.5));
         level_materials.insert("green_off".to_string(), HSL::new(110.0, 0.5, 0.3));
@@ -86,7 +90,15 @@ impl LevelManagerPlugin {
         level_materials.insert("yellow_off".to_string(), HSL::new(67.0, 0.5, 0.3));
         level_materials.insert("door".to_string(), HSL::new(0.0, 0.0, 0.5));
 
-        let bp = LevelBlueprint::new(walls, props, inputs, outputs, logic_tree, level_materials);
+        let bp = LevelBlueprint::new(
+            walls,
+            props,
+            inputs,
+            outputs,
+            goal,
+            logic_tree,
+            level_materials,
+        );
 
         return bp;
     }
