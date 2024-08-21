@@ -41,6 +41,10 @@ impl LogicTree {
         }
     }
 
+    pub fn has_no_logic(&self) -> bool {
+        return self.gates.is_empty() && self.interfaces.is_empty();
+    }
+
     pub fn process(&mut self, input: Vec<bool>) -> Vec<bool> {
         let first_interface = self.interfaces[0].clone();
         let mut mapped_input = Vec::with_capacity(first_interface.len());

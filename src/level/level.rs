@@ -33,6 +33,10 @@ impl Level {
         inputs: &Query<One<&dyn Input>>,
         outputs: &mut Query<One<&mut dyn Output>>,
     ) {
+        if self.logic_tree.has_no_logic() {
+            return;
+        }
+
         let mut input_vec = vec![];
         for input_ent in self.inputs.iter() {
             if let Ok(input_component) = inputs.get(*input_ent) {

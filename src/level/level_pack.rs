@@ -48,7 +48,7 @@ pub struct LevelPack {
 }
 impl LevelPack {
     pub fn new(dir: &str) -> Self {
-        let levels = if let Ok(levels) = fs::read_dir(dir) {
+        let mut levels = if let Ok(levels) = fs::read_dir(dir) {
             levels
                 .into_iter()
                 .filter(|l| l.as_ref().unwrap().metadata().unwrap().is_dir())
@@ -57,6 +57,8 @@ impl LevelPack {
         } else {
             vec![]
         };
+        levels.sort();
+        println!("Loading levels: {levels:?}");
 
         return Self {
             dir: dir.to_string(),

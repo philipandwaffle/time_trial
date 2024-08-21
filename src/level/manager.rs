@@ -39,10 +39,10 @@ impl LevelManagerPlugin {
         let player = vec2(0.0, 0.0);
 
         let walls = vec![
-            WallBluePrint::new(vec2(0.0, -50.0), 0.0, vec2(500.0, 5.0), "wall"),
-            WallBluePrint::new(vec2(0.0, 50.0), 0.0, vec2(500.0, 5.0), "wall"),
-            WallBluePrint::new(vec2(250.0, 0.0), 0.0, vec2(5.0, 100.0), "wall"),
-            WallBluePrint::new(vec2(-250.0, 0.0), 0.0, vec2(5.0, 100.0), "wall"),
+            WallBluePrint::new(vec2(0.0, -100.0), 0.0, vec2(805.0, 5.0), "wall"),
+            WallBluePrint::new(vec2(0.0, 100.0), 0.0, vec2(805.0, 5.0), "wall"),
+            WallBluePrint::new(vec2(400.0, 0.0), 0.0, vec2(5.0, 205.0), "wall"),
+            WallBluePrint::new(vec2(-400.0, 0.0), 0.0, vec2(5.0, 205.0), "wall"),
         ];
 
         let props = vec![PropBlueprint::BoxBlueprint(BoxBlueprint::new(
@@ -76,7 +76,7 @@ impl LevelManagerPlugin {
             "door",
         ))];
 
-        let goal = GoalBlueprint::new(vec2(100.0, 0.0), 0.0, vec2(5.0, 20.0), "goal");
+        let goal = GoalBlueprint::new(vec2(395.0, 0.0), 0.0, vec2(5.0, 20.0), "goal");
 
         let logic_tree = LogicTree::new(
             vec![vec![GateTypes::OrGate(OrGate::default())]],

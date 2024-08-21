@@ -6,6 +6,7 @@ mod input;
 mod level;
 pub mod level_pack;
 mod logic_tree;
+mod logic_tree_v2;
 pub mod manager;
 mod output;
 mod time_shift;
