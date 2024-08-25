@@ -131,6 +131,8 @@ fn write_change_level_event(
 ) {
     if keys.just_pressed(key_binds.next_level.0) {
         ev_change_level.send(ChangeLevelEvent::new(1));
+    } else if keys.just_pressed(key_binds.reload_level.0) {
+        ev_change_level.send(ChangeLevelEvent::new(0));
     } else if keys.just_pressed(key_binds.prev_level.0) {
         ev_change_level.send(ChangeLevelEvent::new(-1));
     }

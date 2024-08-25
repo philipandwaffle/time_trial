@@ -12,6 +12,7 @@ pub struct KeyBinds {
     pub down: KeyBind,
     pub right: KeyBind,
     pub time_shift: KeyBind,
+    pub reload_level: KeyBind,
     pub next_level: KeyBind,
     pub prev_level: KeyBind,
 }
@@ -32,6 +33,7 @@ impl FromStr for KeyBind {
             "KeyE" => KeyCode::KeyE,
             "ArrowDown" => KeyCode::ArrowDown,
             "ArrowUp" => KeyCode::ArrowUp,
+            "KeyR" => KeyCode::KeyR,
             "KeyP" => KeyCode::KeyP,
             "KeyO" => KeyCode::KeyO,
             _ => return Err(ParseKeyBindError),
@@ -52,6 +54,7 @@ impl Serialize for KeyBind {
             KeyCode::KeyE => serializer.serialize_str("KeyE"),
             KeyCode::ArrowDown => serializer.serialize_str("ArrowDown"),
             KeyCode::ArrowUp => serializer.serialize_str("ArrowUp"),
+            KeyCode::KeyR => serializer.serialize_str("KeyR"),
             KeyCode::KeyP => serializer.serialize_str("KeyP"),
             KeyCode::KeyO => serializer.serialize_str("KeyO"),
             _ => panic!("Unable to serialize KeyCode {:?}", self.0),

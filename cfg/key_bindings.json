@@ -4,6 +4,7 @@
     "down": "KeyS",
     "right": "KeyD",
     "time_shift": "KeyE",
+    "reload_level": "KeyR",
     "next_level": "KeyP",
     "prev_level": "KeyO"
 }
