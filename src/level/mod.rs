@@ -1,19 +1,17 @@
 mod blueprints;
 mod bundles;
-mod gate;
 mod goal;
 mod input;
 mod level;
 pub mod level_pack;
-mod logic_tree;
-mod logic_tree_v2;
+mod logic_graph;
 pub mod manager;
 mod output;
 mod time_shift;
 
 #[cfg(test)]
 mod tests {
-    use super::logic_tree_v2::{LogicGraph, Node, Operator};
+    use super::logic_graph::{LogicGraph, Node, Operator};
 
     #[test]
     fn or_logic_graph() {

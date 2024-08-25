@@ -23,12 +23,11 @@ use super::{
         props::{BoxBlueprint, PropBlueprint},
         wall::WallBluePrint,
     },
-    gate::*,
     goal::GoalPlugin,
     input::{ButtonType, Input, InputPlugin},
     level::Level,
     level_pack::LevelPackPlugin,
-    logic_tree::*,
+    logic_graph::{LogicGraph, Node, Operator},
     output::{Output, OutputPlugin},
     time_shift::TimeShiftPlugin,
 };
@@ -78,10 +77,13 @@ impl LevelManagerPlugin {
 
         let goal = GoalBlueprint::new(vec2(395.0, 0.0), 0.0, vec2(5.0, 20.0), "goal");
 
-        let logic_tree = LogicTree::new(
-            vec![vec![GateTypes::OrGate(OrGate::default())]],
-            vec![vec![0, 1], vec![0]],
-        );
+        let nodes = vec![
+            Node::new(Operator::None, vec![]),
+            Node::new(Operator::None, vec![]),
+            Node::new(Operator::And, vec![0, 1]),
+        ];
+
+        let logic_graph = LogicGraph::new(vec![0, 1], vec![2], nodes);
 
         let mut level_materials = HashMap::<String, HSL>::new();
         level_materials.insert("wall".to_string(), HSL::new(0.0, 0.0, 0.0));
@@ -100,7 +102,7 @@ impl LevelManagerPlugin {
             inputs,
             outputs,
             goal,
-            logic_tree,
+            logic_graph,
             level_materials,
         );
 

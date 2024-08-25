@@ -12,11 +12,11 @@ use serde::{Deserialize, Serialize};
 use crate::{
     configuration::{material::HSL, Config, ConfigTag},
     consts::{
-        GOAL_FILE, INPUTS_FILE, LOGIC_TREE_FILE, MATERIALS_FILE, OUTPUTS_FILE, PLAYER_FILE,
+        GOAL_FILE, INPUTS_FILE, LOGIC_GRAPH_FILE, MATERIALS_FILE, OUTPUTS_FILE, PLAYER_FILE,
         PLAYER_Z_OFFSET, PROPS_FILE, WALLS_FILE,
     },
     handles::Handles,
-    level::{bundles::level::LevelRootBundle, level::Level, logic_tree::LogicTree},
+    level::{bundles::level::LevelRootBundle, level::Level, logic_graph::LogicGraph},
 };
 
 use super::{
@@ -31,7 +31,7 @@ pub struct LevelBlueprint {
     inputs: InputBlueprints,
     outputs: OutputBlueprints,
     goal: GoalBlueprint,
-    pub logic_tree: LogicTree,
+    pub logic_graph: LogicGraph,
     level_materials: LevelMaterials,
 }
 impl Config for LevelBlueprint {
@@ -43,7 +43,7 @@ impl Config for LevelBlueprint {
             inputs: InputBlueprints::load_cfg(&format!("{}/{}", path, INPUTS_FILE)),
             outputs: OutputBlueprints::load_cfg(&format!("{}/{}", path, OUTPUTS_FILE)),
             goal: GoalBlueprint::load_cfg(&format!("{}/{}", path, GOAL_FILE)),
-            logic_tree: LogicTree::load_cfg(&format!("{}/{}", path, LOGIC_TREE_FILE)),
+            logic_graph: LogicGraph::load_cfg(&format!("{}/{}", path, LOGIC_GRAPH_FILE)),
             level_materials: LevelMaterials::load_cfg(&format!("{}/{}", path, MATERIALS_FILE)),
         };
     }
@@ -61,8 +61,8 @@ impl Config for LevelBlueprint {
         self.inputs.save_cfg(&format!("{}/{}", path, INPUTS_FILE));
         self.outputs.save_cfg(&format!("{}/{}", path, OUTPUTS_FILE));
         self.goal.save_cfg(&format!("{}/{}", path, GOAL_FILE));
-        self.logic_tree
-            .save_cfg(&format!("{}/{}", path, LOGIC_TREE_FILE));
+        self.logic_graph
+            .save_cfg(&format!("{}/{}", path, LOGIC_GRAPH_FILE));
         self.level_materials
             .save_cfg(&format!("{}/{}", path, MATERIALS_FILE));
     }
@@ -75,7 +75,7 @@ impl LevelBlueprint {
         inputs: Vec<InputBlueprint>,
         outputs: Vec<OutputBluePrint>,
         goal: GoalBlueprint,
-        logic_tree: LogicTree,
+        logic_graph: LogicGraph,
         level_materials: HashMap<String, HSL>,
     ) -> Self {
         return Self {
@@ -85,7 +85,7 @@ impl LevelBlueprint {
             inputs: InputBlueprints(inputs),
             outputs: OutputBlueprints(outputs),
             goal: goal,
-            logic_tree,
+            logic_graph,
             level_materials: LevelMaterials(level_materials),
         };
     }
@@ -141,7 +141,7 @@ impl LevelBlueprint {
         let goal_ent = self.goal.spawn(commands, materials, &handles.square_mesh);
         commands.get_entity(root).unwrap().add_child(goal_ent);
 
-        return Level::new(root, self.logic_tree, input_ents, output_ents);
+        return Level::new(root, self.logic_graph, input_ents, output_ents);
     }
 
     pub fn setup_level_material_handles(
@@ -177,7 +177,7 @@ impl ConfigTag for InputBlueprints {}
 struct OutputBlueprints(Vec<OutputBluePrint>);
 impl ConfigTag for OutputBlueprints {}
 
-impl ConfigTag for LogicTree {}
+impl ConfigTag for LogicGraph {}
 
 #[derive(Deserialize, Serialize)]
 pub struct LevelMaterials(HashMap<String, HSL>);

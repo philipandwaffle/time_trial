@@ -1,3 +1,6 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize)]
 pub struct LogicGraph {
     input_nodes: Vec<usize>,
     output_nodes: Vec<usize>,
@@ -10,6 +13,10 @@ impl LogicGraph {
             output_nodes,
             nodes,
         };
+    }
+
+    pub fn has_no_logic(&self) -> bool {
+        return self.nodes.is_empty();
     }
 
     pub fn process(&mut self, input: Vec<bool>) -> Vec<bool> {
@@ -71,6 +78,7 @@ impl LogicGraph {
     }
 }
 
+#[derive(Deserialize, Serialize)]
 pub struct Node {
     state: bool,
     updated: bool,
@@ -88,13 +96,9 @@ impl Node {
     }
 }
 
+#[derive(Deserialize, Serialize)]
 pub enum Operator {
     None,
     And,
     Or,
-}
-
-struct Wire {
-    in_indices: Vec<usize>,
-    out_indices: Vec<usize>,
 }

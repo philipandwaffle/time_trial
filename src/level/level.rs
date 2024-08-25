@@ -1,24 +1,24 @@
-use super::{input::Input, logic_tree::LogicTree, output::Output};
+use super::{input::Input, logic_graph::LogicGraph, output::Output};
 use bevy::prelude::{Commands, DespawnRecursiveExt, DetectChangesMut, Entity, Query, Resource};
 use bevy_trait_query::*;
 
 #[derive(Resource)]
 pub struct Level {
     root: Entity,
-    logic_tree: LogicTree,
+    logic_graph: LogicGraph,
     inputs: Vec<Entity>,
     outputs: Vec<Entity>,
 }
 impl Level {
     pub fn new(
         root: Entity,
-        logic_tree: LogicTree,
+        logic_graph: LogicGraph,
         inputs: Vec<Entity>,
         outputs: Vec<Entity>,
     ) -> Self {
         return Self {
             root,
-            logic_tree,
+            logic_graph,
             inputs,
             outputs,
         };
@@ -33,7 +33,7 @@ impl Level {
         inputs: &Query<One<&dyn Input>>,
         outputs: &mut Query<One<&mut dyn Output>>,
     ) {
-        if self.logic_tree.has_no_logic() {
+        if self.logic_graph.has_no_logic() {
             return;
         }
 
@@ -44,7 +44,7 @@ impl Level {
             }
         }
 
-        let mut output = self.logic_tree.process(input_vec);
+        let mut output = self.logic_graph.process(input_vec);
         // println!("{:?}", output);
         for output_ent in self.outputs.iter() {
             if let Ok(mut output_component) = outputs.get_mut(*output_ent) {
