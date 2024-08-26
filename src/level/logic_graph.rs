@@ -87,7 +87,9 @@ impl LogicGraph {
 
 #[derive(Deserialize, Serialize)]
 pub struct Node {
+    #[serde(skip)]
     state: bool,
+    #[serde(skip)]
     updated: bool,
     op: Operator,
     in_nodes: Vec<usize>,
