@@ -1,0 +1,21 @@
+{
+  "input_nodes": [
+    0
+  ],
+  "output_nodes": [
+    0,
+    1
+  ],
+  "nodes": [
+    {
+      "op": "None",
+      "in_nodes": []
+    },
+    {
+      "op": "Not",
+      "in_nodes": [
+        0
+      ]
+    }
+  ]
+}

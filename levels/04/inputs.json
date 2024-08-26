@@ -1,0 +1,14 @@
+[
+    {
+        "Button": {
+            "pos": [
+                -100.0,
+                -50.0
+            ],
+            "radius": 10.0,
+            "button_type": "PressButton",
+            "on_material_key": "green_on",
+            "off_material_key": "green_off"
+        }
+    }
+]

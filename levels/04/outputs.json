@@ -1,0 +1,30 @@
+[
+    {
+        "Door": {
+            "pos": [
+                50.0,
+                0.0
+            ],
+            "z_rot": 0.0,
+            "shape": [
+                5.0,
+                200.0
+            ],
+            "material_key": "green"
+        }
+    },
+    {
+        "Door": {
+            "pos": [
+                150.0,
+                0.0
+            ],
+            "z_rot": 0.0,
+            "shape": [
+                5.0,
+                200.0
+            ],
+            "material_key": "green"
+        }
+    }
+]

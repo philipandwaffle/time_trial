@@ -1,0 +1,16 @@
+[
+    {
+        "BoxBlueprint": {
+            "pos": [
+                -100.0,
+                50.0
+            ],
+            "z_rot": 0.0,
+            "shape": [
+                20.0,
+                20.0
+            ],
+            "material_key": "box"
+        }
+    }
+]
