@@ -25,7 +25,7 @@ use crate::{
 use super::{
     blueprints::level::{LevelBlueprint, LevelMaterialHandles},
     manager::LevelManager,
-    time_shift::TimeState,
+    time_shift::{TimeShiftEvent, TimeState},
 };
 
 pub struct LevelPackPlugin;
@@ -98,16 +98,17 @@ impl ChangeLevelEvent {
 }
 fn read_change_level_event(
     mut commands: Commands,
-    mut ev_change_level: EventReader<ChangeLevelEvent>,
+    mut time_shift_ev: EventWriter<TimeShiftEvent>,
+    mut change_level_ev: EventReader<ChangeLevelEvent>,
     mut player: Query<(&mut Transform, &mut Velocity), With<Player>>,
-    mut time_state: ResMut<TimeState>,
+    time_state: Res<TimeState>,
     mut level_manager: ResMut<LevelManager>,
     mut level_pack: ResMut<LevelPack>,
     mut level_material_handles: ResMut<LevelMaterialHandles>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     handles: Res<Handles>,
 ) {
-    for ev in ev_change_level.read() {
+    for ev in change_level_ev.read() {
         let blueprint = level_pack.change_level(ev.delta);
         let (mut transform, mut vel) = player.single_mut();
         vel.linvel = Vec2::ZERO;
@@ -120,7 +121,9 @@ fn read_change_level_event(
             &mut level_material_handles,
             &mut materials,
         );
-        time_state.is_present = !time_state.is_present;
+        if time_state.is_present {
+            time_shift_ev.send(TimeShiftEvent);
+        }
     }
 }
 
