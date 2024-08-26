@@ -56,4 +56,18 @@ mod tests {
         let out = logic_graph.process(vec![false, false]);
         assert!(out[0] == false);
     }
+    #[test]
+    fn not_logic_graph() {
+        let nodes = vec![
+            Node::new(Operator::None, vec![]),
+            Node::new(Operator::Not, vec![0]),
+        ];
+
+        let mut logic_graph = LogicGraph::new(vec![0], vec![1], nodes);
+        let out = logic_graph.process(vec![true]);
+        assert!(out[0] == false);
+
+        let out = logic_graph.process(vec![false]);
+        assert!(out[0] == true);
+    }
 }

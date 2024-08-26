@@ -66,6 +66,13 @@ impl LogicGraph {
                 }
                 s
             }
+            Operator::Not => {
+                let mut s = false;
+                for child_i in children {
+                    s = s || self.nodes[child_i].state;
+                }
+                !s
+            }
         };
 
         self.nodes[i].updated = true;
@@ -101,4 +108,5 @@ pub enum Operator {
     None,
     And,
     Or,
+    Not,
 }
