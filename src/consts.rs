@@ -1,3 +1,5 @@
+use bevy::math::Vec3;
+
 pub const KEY_BINDINGS_CFG_PATH: &str = "cfg/key_bindings.json";
 pub const DISPLAY_CFG_PATH: &str = "cfg/display.json";
 pub const LEVEL_CFG_PATH: &str = "cfg/level.json";
@@ -24,3 +26,9 @@ pub const OUTPUTS_FILE: &str = "outputs.json";
 pub const LOGIC_GRAPH_FILE: &str = "logic_graph.json";
 pub const GOAL_FILE: &str = "goal.json";
 pub const MATERIALS_FILE: &str = "materials.json";
+
+pub const TEXT_SCALE: Vec3 = Vec3 {
+    x: 0.05,
+    y: 0.05,
+    z: 1.0,
+};
