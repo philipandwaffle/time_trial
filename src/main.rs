@@ -13,7 +13,7 @@ use level::manager::LevelManagerPlugin;
 mod configuration;
 mod consts;
 mod handles;
-mod hud;
+mod ui;
 mod level;
 mod player;
 
