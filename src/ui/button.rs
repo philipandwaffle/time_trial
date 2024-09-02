@@ -39,3 +39,12 @@ pub enum ButtonEvent {
     LevelPack(LoadLevelPackEvent),
     Level(LoadLevelEvent),
 }
+impl ButtonEvent {
+    pub fn new_level_pack(level_pack_dir: &str) -> Self {
+        return Self::LevelPack(LoadLevelPackEvent::new(level_pack_dir));
+    }
+
+    pub fn new_level(id: usize) -> Self {
+        return Self::Level(LoadLevelEvent::new(id));
+    }
+}

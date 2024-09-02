@@ -1,15 +1,23 @@
+use std::process::id;
+
 use bevy::{
     a11y::{
         accesskit::{NodeBuilder, Role},
         AccessibilityNode,
     },
+    color::Color,
     prelude::{
-        default, BuildChildren, Bundle, Commands, Component, Entity, Event, Events, NodeBundle,
+        default, BuildChildren, Bundle, ChildBuilder, Commands, Component, Entity, Event, Events,
+        NodeBundle, TextBundle,
     },
+    text::TextStyle,
     ui::{AlignItems, FlexDirection, JustifyContent, Style, Val},
 };
 
-use super::events::{LoadLevelEvent, LoadLevelPackEvent};
+use super::{
+    button::{ButtonEvent, EventButtonBundle},
+    events::{LoadLevelEvent, LoadLevelPackEvent},
+};
 
 #[derive(Component)]
 pub struct UIList;
@@ -55,51 +63,80 @@ impl UIListBundle {
 // }
 
 pub trait ListItem {
-    fn get_text(&self) -> Vec<String>;
+    fn spawn(self, commands: &mut ChildBuilder) -> Entity;
 }
 
 pub struct LevelPackItem {
-    name: String,
-    progress: f32,
-    rating: f32,
+    name: ElementType,
+    progress: ElementType,
+    rating: ElementType,
+    load_level_pack: ElementType,
 }
 impl LevelPackItem {
-    pub fn new(name: &str, progress: f32, rating: f32) -> Self {
+    pub fn new(name: &str, progress: f32, rating: f32, level_pack_dir: &str) -> Self {
         return Self {
-            name: name.to_string(),
-            progress,
-            rating,
+            name: ElementType::Text(name.to_string()),
+            progress: ElementType::Text(progress.to_string()),
+            rating: ElementType::Text(format!("{rating}%")),
+            load_level_pack: ElementType::Button(ButtonEvent::new_level_pack(level_pack_dir)),
         };
     }
 }
 impl ListItem for LevelPackItem {
-    fn get_text(&self) -> Vec<String> {
-        return vec![
-            self.name.clone(),
-            self.progress.to_string(),
-            self.rating.to_string(),
-        ];
+    fn spawn(self, commands: &mut ChildBuilder) -> Entity {
+        return commands
+            .spawn(NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Row,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                ..default()
+            })
+            .with_children(|node| {
+                self.name.spawn(node, 0.25);
+                self.progress.spawn(node, 0.25);
+                self.rating.spawn(node, 0.25);
+                self.load_level_pack.spawn(node, 0.25);
+            }).id();
     }
 }
 
 pub struct LevelItem {
     name: ElementType,
     complete: ElementType,
+    load_level: ElementType,
 }
 impl LevelItem {
-    pub fn new(name: &str, complete: bool) -> Self {
+    pub fn new(name: &str, complete: bool, level_id: usize) -> Self {
         return Self {
             name: ElementType::Text(name.to_string()),
-            complete,
+            complete: ElementType::Text(complete.to_string()),
+            load_level: ElementType::Button(ButtonEvent::new_level(level_id)),
         };
     }
 }
 
 enum ElementType {
     Text(String),
-    Button(String),
+    Button(ButtonEvent),
 }
-pub enum ButtonEvent(){
-    LevelPack(LoadLevelPackEvent),
-    Level(LoadLevelEvent)
+impl ElementType {
+    fn spawn(self, commands: &mut ChildBuilder, width: f32) -> Entity {
+        return match self {
+            ElementType::Text(val) => commands
+                .spawn(TextBundle::from_section(
+                    val,
+                    TextStyle {
+                        font_size: 12.0,
+                        color: Color::BLACK,
+                        ..default()
+                    },
+                ))
+                .id(),
+            ElementType::Button(event) => commands
+                .spawn(EventButtonBundle::new(width, 100.0, event))
+                .id(),
+        };
+    }
 }
