@@ -1,6 +1,7 @@
 use crate::player::player_bundle::PlayerPlugin;
-use bevy::app::App;
-use bevy::prelude::{default, ImagePlugin, PluginGroup};
+use bevy::app::{App, Startup};
+use bevy::prelude::{default, Commands, ImagePlugin, PluginGroup};
+use bevy::transform::commands;
 use bevy::window::{Window, WindowMode, WindowPlugin, WindowPosition};
 use bevy::{log::LogPlugin, DefaultPlugins};
 use bevy_rapier2d::prelude::*;
@@ -9,13 +10,14 @@ use configuration::{Config, ConfigPlugin};
 use consts::DISPLAY_CFG_PATH;
 use handles::HandlesPlugin;
 use level::manager::LevelManagerPlugin;
+use ui::selection_list::{LevelPackItem, UIListBundle};
 
 mod configuration;
 mod consts;
 mod handles;
-mod ui;
 mod level;
 mod player;
+mod ui;
 
 fn main() {
     let display_config = DisplayConfig::load_cfg(DISPLAY_CFG_PATH);
@@ -52,5 +54,13 @@ fn main() {
             PlayerPlugin,
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
         ))
+        .add_systems(Startup, testing)
         .run();
+}
+
+fn testing(mut commands: Commands) {
+    UIListBundle::new().spawn(
+        &mut commands,
+        vec![Box::new(LevelPackItem::new("name", 0.5, 0.5, "foo"))],
+    );
 }

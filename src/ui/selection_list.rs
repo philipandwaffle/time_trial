@@ -11,7 +11,7 @@ use bevy::{
         NodeBundle, TextBundle,
     },
     text::TextStyle,
-    ui::{AlignItems, FlexDirection, JustifyContent, Style, Val},
+    ui::{AlignItems, AlignSelf, FlexDirection, JustifyContent, Overflow, Style, Val},
 };
 
 use super::{
@@ -35,7 +35,9 @@ impl UIListBundle {
             node_bundle: NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
+                    align_self: AlignSelf::Stretch,
+                    height: Val::Percent(50.),
+                    overflow: Overflow::clip_y(),
                     ..default()
                 },
                 ..default()
@@ -43,11 +45,17 @@ impl UIListBundle {
             accessibility_node: AccessibilityNode(NodeBuilder::new(Role::List)),
         };
     }
-    pub fn spawn(self, commands: &mut Commands) -> Entity {
+    pub fn spawn(self, commands: &mut Commands, items: Vec<Box<dyn ListItem>>) -> Entity {
         let root_ent = commands.spawn(self).id();
-        // commands.get_entity(root_ent).unwrap().with_children(|p|{
-        //     for
-        // })
+
+        if let Some(mut root_commands) = commands.get_entity(root_ent) {
+            root_commands.with_children(|mut p| {
+                for item in items {
+                    item.spawn(&mut p);
+                }
+            });
+        }
+
         return root_ent;
     }
 }
@@ -63,7 +71,7 @@ impl UIListBundle {
 // }
 
 pub trait ListItem {
-    fn spawn(self, commands: &mut ChildBuilder) -> Entity;
+    fn spawn(self: Box<Self>, commands: &mut ChildBuilder) -> Entity;
 }
 
 pub struct LevelPackItem {
@@ -83,22 +91,26 @@ impl LevelPackItem {
     }
 }
 impl ListItem for LevelPackItem {
-    fn spawn(self, commands: &mut ChildBuilder) -> Entity {
+    fn spawn(self: Box<LevelPackItem>, commands: &mut ChildBuilder) -> Entity {
         return commands
-            .spawn(NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Row,
-                    align_items: AlignItems::Center,
+            .spawn((
+                NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Row,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
                     ..default()
                 },
-                ..default()
+                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+            ))
+            .with_children(|row| {
+                self.name.spawn(row, 0.25);
+                self.progress.spawn(row, 0.25);
+                self.rating.spawn(row, 0.25);
+                self.load_level_pack.spawn(row, 0.25);
             })
-            .with_children(|node| {
-                self.name.spawn(node, 0.25);
-                self.progress.spawn(node, 0.25);
-                self.rating.spawn(node, 0.25);
-                self.load_level_pack.spawn(node, 0.25);
-            }).id();
+            .id();
     }
 }
 
