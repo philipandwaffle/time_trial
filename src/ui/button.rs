@@ -1,5 +1,9 @@
 use bevy::{
-    prelude::{default, Bundle, ButtonBundle, ChildBuilder, Component, Entity},
+    color::Color,
+    prelude::{
+        default, BuildChildren, Bundle, ButtonBundle, ChildBuilder, Component, Entity, TextBundle,
+    },
+    text::{Text, TextStyle},
     ui::{AlignItems, JustifyContent, Style, Val},
 };
 
@@ -29,8 +33,27 @@ impl EventButtonBundle {
         };
     }
 
-    pub fn spawn(self, commands: &mut ChildBuilder) -> Entity {
-        return commands.spawn(self).id();
+    pub fn spawn(self, commands: &mut ChildBuilder, text: String) -> Entity {
+        return commands
+            .spawn(self)
+            .with_children(|child_builder| {
+                child_builder.spawn(TextBundle {
+                    text: Text::from_section(
+                        text,
+                        TextStyle {
+                            font_size: 12.0,
+                            color: Color::BLACK,
+                            ..default()
+                        },
+                    ),
+                    style: Style {
+                        // justify_content: JustifyContent::SpaceAround,
+                        ..default()
+                    },
+                    ..default()
+                });
+            })
+            .id();
     }
 }
 

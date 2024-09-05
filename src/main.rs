@@ -1,7 +1,8 @@
 use crate::player::player_bundle::PlayerPlugin;
 use bevy::app::{App, Startup};
-use bevy::prelude::{default, Commands, ImagePlugin, PluginGroup};
+use bevy::prelude::{default, BuildChildren, Commands, ImagePlugin, NodeBundle, PluginGroup};
 use bevy::transform::commands;
+use bevy::ui::{JustifyContent, Style, Val};
 use bevy::window::{Window, WindowMode, WindowPlugin, WindowPosition};
 use bevy::{log::LogPlugin, DefaultPlugins};
 use bevy_rapier2d::prelude::*;
@@ -59,8 +60,25 @@ fn main() {
 }
 
 fn testing(mut commands: Commands) {
-    UIListBundle::new().spawn(
-        &mut commands,
-        vec![Box::new(LevelPackItem::new("name", 0.5, 0.5, "foo"))],
-    );
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::SpaceBetween,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|child_builder| {
+            UIListBundle::new().spawn(
+                child_builder,
+                vec![Box::new(LevelPackItem::new(
+                    "level pack name",
+                    25.0,
+                    98.9,
+                    "Load level",
+                ))],
+            );
+        });
 }
