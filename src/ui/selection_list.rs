@@ -33,12 +33,13 @@ impl Plugin for ScrollingListPlugin {
 
 fn mouse_scroll(
     mut mouse_wheel_events: EventReader<MouseWheel>,
-    mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,
+    mut query_list: Query<(&mut ScrollingList, &mut Style, Entity, &Parent, &Node)>,
     query_node: Query<&Node>,
 ) {
     for mouse_wheel_event in mouse_wheel_events.read() {
-        for (mut scrolling_list, mut style, parent, list_node) in &mut query_list {
+        for (mut scrolling_list, mut style, ent, parent, list_node) in &mut query_list {
             let items_height = list_node.size().y;
+            // let container_height = query_node.get(ent).unwrap().size().y;
             let container_height = query_node.get(parent.get()).unwrap().size().y;
 
             let max_scroll = (items_height - container_height).max(0.);
@@ -49,8 +50,15 @@ fn mouse_scroll(
             };
 
             scrolling_list.position += dy;
-            scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
+            scrolling_list.position = scrolling_list.position.clamp(-1000.0, 0.);
             style.top = Val::Px(scrolling_list.position);
+            println!(
+                "{}, {}, {}, {}",
+                scrolling_list.position,
+                list_node.size(),
+                max_scroll,
+                container_height
+            );
         }
     }
 }
