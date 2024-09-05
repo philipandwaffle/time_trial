@@ -11,7 +11,8 @@ use configuration::{Config, ConfigPlugin};
 use consts::DISPLAY_CFG_PATH;
 use handles::HandlesPlugin;
 use level::manager::LevelManagerPlugin;
-use ui::selection_list::{LevelPackItem, UIListBundle};
+use ui::selection_list::{LevelPackItem, ListItem, UIListBundle};
+use ui::ui_plugin::UIPlugin;
 
 mod configuration;
 mod consts;
@@ -54,12 +55,22 @@ fn main() {
             LevelManagerPlugin,
             PlayerPlugin,
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+            UIPlugin,
         ))
         .add_systems(Startup, testing)
         .run();
 }
 
 fn testing(mut commands: Commands) {
+    let mut list_items: Vec<Box<dyn ListItem>> = vec![];
+    for i in 0..30 {
+        list_items.push(Box::new(LevelPackItem::new(
+            &format!("level pack name {i}"),
+            25.0,
+            98.9,
+            "Load level",
+        )));
+    }
     commands
         .spawn(NodeBundle {
             style: Style {
@@ -71,14 +82,6 @@ fn testing(mut commands: Commands) {
             ..default()
         })
         .with_children(|child_builder| {
-            UIListBundle::new().spawn(
-                child_builder,
-                vec![Box::new(LevelPackItem::new(
-                    "level pack name",
-                    25.0,
-                    98.9,
-                    "Load level",
-                ))],
-            );
+            UIListBundle::new().spawn(child_builder, list_items);
         });
 }

@@ -5,14 +5,17 @@ use bevy::{
         accesskit::{NodeBuilder, Role},
         AccessibilityNode,
     },
+    app::{Plugin, Update},
     color::Color,
+    input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::{
-        default, BuildChildren, Bundle, ChildBuilder, Commands, Component, Entity, Event, Events,
-        NodeBundle, TextBundle,
+        default, BuildChildren, Bundle, ChildBuilder, Commands, Component, Entity, Event,
+        EventReader, Events, NodeBundle, Parent, Query, TextBundle,
     },
     text::{Text, TextStyle},
     ui::{
-        AlignContent, AlignItems, AlignSelf, FlexDirection, JustifyContent, Overflow, Style, Val,
+        AlignContent, AlignItems, AlignSelf, FlexDirection, JustifyContent, Node, Overflow, Style,
+        Val,
     },
 };
 
@@ -21,27 +24,61 @@ use super::{
     events::{LoadLevelEvent, LoadLevelPackEvent},
 };
 
-#[derive(Component)]
-pub struct UIList;
+pub struct ScrollingListPlugin;
+impl Plugin for ScrollingListPlugin {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.add_systems(Update, mouse_scroll);
+    }
+}
+
+fn mouse_scroll(
+    mut mouse_wheel_events: EventReader<MouseWheel>,
+    mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,
+    query_node: Query<&Node>,
+) {
+    for mouse_wheel_event in mouse_wheel_events.read() {
+        for (mut scrolling_list, mut style, parent, list_node) in &mut query_list {
+            let items_height = list_node.size().y;
+            let container_height = query_node.get(parent.get()).unwrap().size().y;
+
+            let max_scroll = (items_height - container_height).max(0.);
+
+            let dy = match mouse_wheel_event.unit {
+                MouseScrollUnit::Line => mouse_wheel_event.y * 20.,
+                MouseScrollUnit::Pixel => mouse_wheel_event.y,
+            };
+
+            scrolling_list.position += dy;
+            scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
+            style.top = Val::Px(scrolling_list.position);
+        }
+    }
+}
+
+#[derive(Component, Default)]
+pub struct ScrollingList {
+    position: f32,
+}
 
 #[derive(Bundle)]
 pub struct UIListBundle {
-    marker: UIList,
+    scrolling_list: ScrollingList,
     node_bundle: NodeBundle,
     accessibility_node: AccessibilityNode,
 }
 impl UIListBundle {
     pub fn new() -> Self {
         return Self {
-            marker: UIList,
+            scrolling_list: ScrollingList::default(),
             node_bundle: NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
-                    height: Val::Percent(50.),
-                    width: Val::Percent(50.),
+                    justify_content: JustifyContent::Center,
                     overflow: Overflow::clip_y(),
+                    align_self: AlignSelf::Stretch,
+                    height: Val::Percent(50.),
+                    width: Val::Percent(100.),
                     ..default()
                 },
                 background_color: Color::hsla(200.0, 0.5, 0.5, 0.1).into(),
@@ -58,16 +95,6 @@ impl UIListBundle {
         });
     }
 }
-
-// #[derive(Component)]
-// pub struct UIList<T: Sync + Send> {
-//     items: Vec<T>,
-// }
-// impl<T: Sync + Send> UIList<T> {
-//     pub fn new(items: Vec<T>) -> Self {
-//         return Self { items };
-//     }
-// }
 
 pub trait ListItem {
     fn spawn(self: Box<Self>, child_builder: &mut ChildBuilder) -> Entity;
@@ -103,6 +130,7 @@ impl ListItem for LevelPackItem {
                         width: Val::Percent(100.0),
                         ..default()
                     },
+
                     ..default()
                 },
                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),

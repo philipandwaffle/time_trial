@@ -1,4 +1,5 @@
 use bevy::{
+    app::Plugin,
     color::Color,
     prelude::{
         default, BuildChildren, Bundle, ButtonBundle, ChildBuilder, Component, Entity, TextBundle,
@@ -8,6 +9,11 @@ use bevy::{
 };
 
 use super::events::{LoadLevelEvent, LoadLevelPackEvent};
+
+pub struct ButtonPlugin;
+impl Plugin for ButtonPlugin {
+    fn build(&self, app: &mut bevy::prelude::App) {}
+}
 
 #[derive(Bundle)]
 pub struct EventButtonBundle {
