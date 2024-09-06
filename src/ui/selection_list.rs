@@ -6,18 +6,19 @@ use bevy::{
         AccessibilityNode,
     },
     app::{Plugin, Update},
-    color::Color,
     input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::{
-        default, BuildChildren, Bundle, ChildBuilder, Commands, Component, Entity, Event,
-        EventReader, Events, NodeBundle, Parent, Query, TextBundle,
+        default, BuildChildren, Bundle, ChildBuilder, Commands, Component, DespawnRecursiveExt,
+        Entity, Event, EventReader, Events, NodeBundle, Parent, Query, TextBundle,
     },
     text::{Text, TextStyle},
     ui::{
         AlignContent, AlignItems, AlignSelf, FlexDirection, JustifyContent, Node, Overflow, Style,
-        Val,
+        UiRect, Val,
     },
 };
+
+use crate::consts::{INFO, LIGHT, PRIMARY, SECONDARY, TEXT_COLOR, TEXT_SIZE};
 
 use super::{
     button::{ButtonEvent, EventButtonBundle},
@@ -33,11 +34,11 @@ impl Plugin for ScrollingListPlugin {
 
 fn mouse_scroll(
     mut mouse_wheel_events: EventReader<MouseWheel>,
-    mut query_list: Query<(&mut ScrollingList, &mut Style, Entity, &Parent, &Node)>,
+    mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,
     query_node: Query<&Node>,
 ) {
     for mouse_wheel_event in mouse_wheel_events.read() {
-        for (mut scrolling_list, mut style, ent, parent, list_node) in &mut query_list {
+        for (mut scrolling_list, mut style, parent, list_node) in &mut query_list {
             let items_height = list_node.size().y;
             // let container_height = query_node.get(ent).unwrap().size().y;
             let container_height = query_node.get(parent.get()).unwrap().size().y;
@@ -50,7 +51,7 @@ fn mouse_scroll(
             };
 
             scrolling_list.position += dy;
-            scrolling_list.position = scrolling_list.position.clamp(-1000.0, 0.);
+            scrolling_list.position = scrolling_list.position.clamp(-container_height, 0.);
             style.top = Val::Px(scrolling_list.position);
             println!(
                 "{}, {}, {}, {}",
@@ -75,32 +76,91 @@ pub struct UIListBundle {
     accessibility_node: AccessibilityNode,
 }
 impl UIListBundle {
-    pub fn new() -> Self {
-        return Self {
-            scrolling_list: ScrollingList::default(),
-            node_bundle: NodeBundle {
+    pub fn spawn(
+        child_builder: &mut ChildBuilder,
+        width: f32,
+        height: f32,
+        left: f32,
+        top: f32,
+        title: Box<dyn ListItem>,
+        items: Vec<Box<dyn ListItem>>,
+    ) {
+        child_builder
+            .spawn(NodeBundle {
                 style: Style {
+                    width: Val::Percent(width),
+                    height: Val::Percent(height),
+                    left: Val::Percent(left),
+                    top: Val::Percent(top),
                     flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    overflow: Overflow::clip_y(),
-                    align_self: AlignSelf::Stretch,
-                    height: Val::Percent(50.),
-                    width: Val::Percent(100.),
+                    justify_content: JustifyContent::SpaceBetween,
                     ..default()
                 },
-                background_color: Color::hsla(200.0, 0.5, 0.5, 0.1).into(),
                 ..default()
-            },
-            accessibility_node: AccessibilityNode(NodeBuilder::new(Role::List)),
-        };
+            })
+            .with_children(|mut cb| {
+                title.spawn(&mut cb);
+                cb.spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        overflow: Overflow::clip_y(),
+                        justify_content: JustifyContent::SpaceBetween,
+                        align_self: AlignSelf::Stretch,
+                        ..default()
+                    },
+                    background_color: LIGHT.into(),
+                    ..default()
+                })
+                .with_children(|cb| {
+                    cb.spawn(Self {
+                        scrolling_list: ScrollingList::default(),
+                        node_bundle: NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::Column,
+                                align_items: AlignItems::Center,
+                                justify_content: JustifyContent::Center,
+                                align_self: AlignSelf::Stretch,
+                                ..default()
+                            },
+                            background_color: PRIMARY.into(),
+                            ..default()
+                        },
+                        accessibility_node: AccessibilityNode(NodeBuilder::new(Role::List)),
+                    })
+                    .with_children(|mut cb| {
+                        for item in items {
+                            item.spawn(&mut cb);
+                        }
+                    });
+                });
+            });
     }
-    pub fn spawn(self, child_builder: &mut ChildBuilder, items: Vec<Box<dyn ListItem>>) {
-        child_builder.spawn(self).with_children(|mut p| {
-            for item in items {
-                item.spawn(&mut p);
-            }
-        });
+
+    pub fn update_items(ent: Entity, commands: &mut Commands, items: Vec<Box<dyn ListItem>>) {
+        if let Some(mut commands) = commands.get_entity(ent) {
+            commands.despawn_descendants().with_children(|cb| {
+                cb.spawn(Self {
+                    scrolling_list: ScrollingList::default(),
+                    node_bundle: NodeBundle {
+                        style: Style {
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            align_self: AlignSelf::Stretch,
+                            ..default()
+                        },
+                        background_color: PRIMARY.into(),
+                        ..default()
+                    },
+                    accessibility_node: AccessibilityNode(NodeBuilder::new(Role::List)),
+                })
+                .with_children(|mut cb| {
+                    for item in items {
+                        item.spawn(&mut cb);
+                    }
+                });
+            });
+        }
     }
 }
 
@@ -115,7 +175,7 @@ pub struct LevelPackItem {
     load_level_pack: ElementType,
 }
 impl LevelPackItem {
-    pub fn new(name: &str, progress: f32, rating: f32, level_pack_dir: &str) -> Self {
+    pub fn new_item(name: &str, progress: f32, rating: f32, level_pack_dir: &str) -> Self {
         return Self {
             name: ElementType::Text(name.to_string()),
             progress: ElementType::Text(format!("{progress}%")),
@@ -124,6 +184,15 @@ impl LevelPackItem {
                 ButtonEvent::new_level_pack(level_pack_dir),
                 "Load Pack".to_string(),
             ),
+        };
+    }
+
+    pub fn new_title() -> Self {
+        return Self {
+            name: ElementType::Text("Name".to_string()),
+            progress: ElementType::Text("Progress".to_string()),
+            rating: ElementType::Text("Rating".to_string()),
+            load_level_pack: ElementType::Text("Click to load".to_string()),
         };
     }
 }
@@ -136,18 +205,19 @@ impl ListItem for LevelPackItem {
                         flex_direction: FlexDirection::Row,
                         justify_content: JustifyContent::SpaceBetween,
                         width: Val::Percent(100.0),
+                        // margin: UiRect::percent(0.5, 0.5, 0.0, 0.0),
                         ..default()
                     },
-
+                    background_color: SECONDARY.into(),
                     ..default()
                 },
                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
             ))
             .with_children(|row| {
-                self.name.spawn(row, 25.0);
-                self.progress.spawn(row, 25.0);
-                self.rating.spawn(row, 25.0);
-                self.load_level_pack.spawn(row, 25.0);
+                self.name.spawn(row, 50.0);
+                self.progress.spawn(row, 15.0);
+                self.rating.spawn(row, 15.0);
+                self.load_level_pack.spawn(row, 20.0);
             })
             .id();
     }
@@ -183,11 +253,11 @@ impl ElementType {
                     .spawn(NodeBundle {
                         style: Style {
                             width: Val::Percent(width),
-                            // align_content: AlignContent::Stretch,
                             justify_content: JustifyContent::SpaceAround,
+                            margin: UiRect::px(1.0, 1.0, 1.0, 1.0),
                             ..default()
                         },
-                        background_color: Color::hsla(200.0, 0.5, 0.8, 0.1).into(),
+                        background_color: INFO.into(),
                         ..default()
                     })
                     .with_children(|child_builder| {
@@ -195,8 +265,8 @@ impl ElementType {
                             text: Text::from_section(
                                 val,
                                 TextStyle {
-                                    font_size: 12.0,
-                                    color: Color::BLACK,
+                                    font_size: TEXT_SIZE,
+                                    color: TEXT_COLOR,
                                     ..default()
                                 },
                             ),

@@ -1,4 +1,4 @@
-use bevy::math::Vec3;
+use bevy::{color::Color, math::Vec3};
 
 pub const KEY_BINDINGS_CFG_PATH: &str = "cfg/key_bindings.json";
 pub const DISPLAY_CFG_PATH: &str = "cfg/display.json";
@@ -32,3 +32,17 @@ pub const TEXT_SCALE: Vec3 = Vec3 {
     y: 0.05,
     z: 1.0,
 };
+pub const TEXT_COLOR: Color = Color::hsla(0.0, 0.0, 0.0, 1.0);
+pub const TEXT_SIZE: f32 = 16.0;
+
+pub const LIGHT: Color = Color::hsla(214.0, 0.48, 0.85, 0.8);
+pub const WHITE: Color = Color::hsla(0.0, 0.0, 1.0, 0.8);
+pub const DARK: Color = Color::hsla(0.0, 0.0, 0.0, 0.8);
+
+pub const PRIMARY: Color = Color::hsla(258.0, 0.82, 0.42, 0.8);
+pub const SECONDARY: Color = Color::hsla(243.0, 0.82, 0.68, 0.8);
+pub const INFO: Color = Color::hsla(252.0, 0.36, 0.63, 0.8);
+
+pub const ACCENT_1: Color = Color::hsla(261.0, 0.22, 0.32, 0.8);
+pub const ACCENT_2: Color = Color::hsla(256.0, 0.51, 0.60, 0.8);
+pub const ACCENT_3: Color = Color::hsla(289.0, 0.13, 0.68, 0.8);

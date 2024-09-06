@@ -64,7 +64,7 @@ fn main() {
 fn testing(mut commands: Commands) {
     let mut list_items: Vec<Box<dyn ListItem>> = vec![];
     for i in 0..30 {
-        list_items.push(Box::new(LevelPackItem::new(
+        list_items.push(Box::new(LevelPackItem::new_item(
             &format!("level pack name {i}"),
             25.0,
             98.9,
@@ -82,6 +82,14 @@ fn testing(mut commands: Commands) {
             ..default()
         })
         .with_children(|child_builder| {
-            UIListBundle::new().spawn(child_builder, list_items);
+            UIListBundle::spawn(
+                child_builder,
+                50.0,
+                100.0,
+                50.0,
+                0.0,
+                Box::new(LevelPackItem::new_title()),
+                list_items,
+            );
         });
 }

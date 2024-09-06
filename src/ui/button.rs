@@ -8,6 +8,8 @@ use bevy::{
     ui::{AlignItems, JustifyContent, Style, Val},
 };
 
+use crate::consts::TEXT_SIZE;
+
 use super::events::{LoadLevelEvent, LoadLevelPackEvent};
 
 pub struct ButtonPlugin;
@@ -47,7 +49,7 @@ impl EventButtonBundle {
                     text: Text::from_section(
                         text,
                         TextStyle {
-                            font_size: 12.0,
+                            font_size: TEXT_SIZE,
                             color: Color::BLACK,
                             ..default()
                         },
